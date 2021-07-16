@@ -1,5 +1,6 @@
 #include "ReplenishWordMainWidget.h"
 #include <QVBoxLayout>
+#include <QApplication>
 
 ReplenishWordMainWidget::ReplenishWordMainWidget(QWidget* parent)
     :QWidget(parent)
@@ -16,9 +17,13 @@ void ReplenishWordMainWidget::initUI(void)
 {
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-    m_pReplenishWidget = new QWidget;
+    m_pReplenishWidget = new FreeTypeRenderWidget;
     m_pReplenishWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     mainLayout->addWidget(m_pReplenishWidget);
+
+    // Init Render Widget
+    QString fontPath = qApp->applicationDirPath() + "/simsun.ttc";
+    m_pReplenishWidget->loadCurrentFont(fontPath);
 
     // Add Bottom Widget
     QWidget* pButtomWidget = createBottomWidget();
@@ -42,4 +47,10 @@ QWidget* ReplenishWordMainWidget::createBottomWidget(void)
     pBottomLayout->addWidget(pButton);
 
     return pBottomWidget;
+}
+
+void ReplenishWordMainWidget::onClickedButton(void)
+{
+    QString str = m_pInputLineEdit->text();
+    m_pReplenishWidget->setCurrentRender(str);
 }

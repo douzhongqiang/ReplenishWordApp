@@ -12,6 +12,9 @@ OBJECTS_DIR += $$PWD/temp
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+INCLUDEPATH += $$PWD/../FreeTypeWraper
+LIBS += -L$$PWD/bin/ -lFreeTypeWraper
+
 SOURCES += \
     ReplenishWordMainWidget.cpp \
     main.cpp \
@@ -20,6 +23,15 @@ SOURCES += \
 HEADERS += \
     ReplenishWordMainWidget.h \
     mainwindow.h
+
+INCLUDEPATH += $$PWD/../3part/FreeType/include
+CONFIG(debug, debug|release) {
+    #VS2019
+    LIBS += -L$$PWD/../3part/FreeType/libs/Debug -lfreetyped
+}
+else{
+    LIBS += -L$$PWD/../3part/FreeType/libs/Release -lfreetype
+}
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

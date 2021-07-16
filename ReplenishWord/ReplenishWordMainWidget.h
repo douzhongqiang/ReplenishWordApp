@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
+#include "FreeTypeRenderWidget.h"
 
 class ReplenishWordMainWidget : public QWidget
 {
@@ -15,11 +16,14 @@ public:
     ~ReplenishWordMainWidget();
 
 private:
-    QWidget* m_pReplenishWidget = nullptr;
+    FreeTypeRenderWidget* m_pReplenishWidget = nullptr;
     QLineEdit* m_pInputLineEdit = nullptr;
 
     void initUI(void);
     QWidget* createBottomWidget(void);
+
+private slots:
+    void onClickedButton(void);
 };
 
 #endif

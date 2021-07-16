@@ -15,4 +15,5 @@ public:
 private:
     ReplenishWordMainWidget* m_pMainWidget = nullptr;
 };
+
 #endif // MAINWINDOW_H

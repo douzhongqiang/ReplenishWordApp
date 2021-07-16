@@ -24,10 +24,12 @@ else{
 
 SOURCES += \
     FreeTypeCore.cpp \
+    FreeTypeRenderWidget.cpp \
     freetypewraper.cpp
 
 HEADERS += \
     FreeTypeCore.h \
+    FreeTypeRenderWidget.h \
     FreeTypeWraper_global.h \
     freetypewraper.h
 
