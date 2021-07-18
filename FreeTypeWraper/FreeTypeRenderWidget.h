@@ -21,6 +21,8 @@ public:
 
 private:
     QSharedPointer<FreeTypeCore> m_pFreeTypeCore;
+
+    void paintEvent(QPaintEvent* event);
 };
 
 #endif

@@ -60,5 +60,42 @@ bool FreeTypeCore::loadChar(unsigned int unicode)
         return false;
     }
 
+    loadCurrentFace();
+
     return true;
+}
+
+void FreeTypeCore::loadCurrentFace(void)
+{
+    FT_Outline outline = m_pFace->glyph->outline;
+
+    int nContours = outline.n_contours;
+    int index = 0;
+
+    PointInfos tempInfos;
+    for (int i=0; i<nContours; ++i)
+    {
+        if (outline.contours[index] == i)
+        {
+            m_PointInfos.push_back(tempInfos);
+            tempInfos.clear();
+
+            index++;
+        }
+
+        PointInfo posInfo;
+        QPoint pos(outline.points[i].x, outline.points[i].y);
+        posInfo.pos = pos;
+        if (outline.tags[i] & 0x01)
+            posInfo.pointType = 0;
+        else if (outline.tags[i] & 0x02)
+            posInfo.pointType = 1;
+
+        tempInfos.push_back(posInfo);
+    }
+}
+
+void FreeTypeCore::render(QPainter* painter)
+{
+
 }

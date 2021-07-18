@@ -5,6 +5,7 @@
 #include <QPointF>
 #include <ft2build.h>
 #include <freetype/freetype.h>
+#include <QPainter>
 #include "FreeTypeWraper_global.h"
 
 class FREETYPEWRAPER_EXPORT FreeTypeCore : public QObject
@@ -18,6 +19,8 @@ public:
         int pointType = 0;      // 0 : Normal. 1: quad Control, 2: cubic Control
     };
 
+    typedef QVector<PointInfo> PointInfos;
+
 public:
     FreeTypeCore(QObject* parent = nullptr);
     ~FreeTypeCore();
@@ -29,11 +32,16 @@ public:
 
     bool loadChar(unsigned int unicode);
 
+    void render(QPainter* painter);
+
 private:
     FT_Face m_pFace = nullptr;
     FT_Library m_pFreetypeLibrary = nullptr;
 
     int m_nFacePixelSize = 100;
+
+    void loadCurrentFace(void);
+    QVector<PointInfos> m_PointInfos;
 };
 
 #endif

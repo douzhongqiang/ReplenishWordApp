@@ -1,5 +1,6 @@
 #include "FreeTypeRenderWidget.h"
 #include <QDebug>
+#include <QPainter>
 
 FreeTypeRenderWidget::FreeTypeRenderWidget(QWidget* parent)
     :QWidget(parent)
@@ -30,6 +31,16 @@ void FreeTypeRenderWidget::setCurrentRender(const QString& renderString)
     if (m_pFreeTypeCore.isNull())
         return;
 
-    qDebug() << renderString;
-//    m_pFreeTypeCore->loadChar();
+    ushort unicode = renderString.unicode()->unicode();
+    m_pFreeTypeCore->loadChar(unicode);
+}
+
+void FreeTypeRenderWidget::paintEvent(QPaintEvent* event)
+{
+    QPainter pinter(this);
+
+    if (m_pFreeTypeCore)
+        m_pFreeTypeCore->render(&pinter);
+
+    return QWidget::paintEvent(event);
 }

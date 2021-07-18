@@ -44,6 +44,7 @@ QWidget* ReplenishWordMainWidget::createBottomWidget(void)
     pBottomLayout->addWidget(m_pInputLineEdit);
 
     QPushButton* pButton = new QPushButton(tr("Inset"));
+    QObject::connect(pButton, &QPushButton::clicked, this, &ReplenishWordMainWidget::onClickedButton);
     pBottomLayout->addWidget(pButton);
 
     return pBottomWidget;
