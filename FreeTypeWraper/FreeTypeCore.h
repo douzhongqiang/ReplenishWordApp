@@ -42,6 +42,12 @@ private:
 
     void loadCurrentFace(void);
     QVector<PointInfos> m_PointInfos;
+
+private:
+    static int moveTo(const FT_Vector* to, void* user);
+    static int lineTo(const FT_Vector* to, void* user);
+    static int conicTo(const FT_Vector* control, const FT_Vector* to, void* user);
+    static int cubicto(const FT_Vector* control1, const FT_Vector* control2, const FT_Vector* to, void* user);
 };
 
 #endif

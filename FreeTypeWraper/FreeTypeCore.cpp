@@ -1,5 +1,7 @@
 #include "FreeTypeCore.h"
 #include <QDebug>
+#include <freetype/ftimage.h>
+#include <freetype/ftoutln.h>
 
 FreeTypeCore::FreeTypeCore(QObject* parent)
     :QObject(parent)
@@ -62,6 +64,19 @@ bool FreeTypeCore::loadChar(unsigned int unicode)
 
     loadCurrentFace();
 
+
+    FT_Outline_Funcs callback;
+    callback.move_to = FreeTypeCore::moveTo;
+    callback.line_to = FreeTypeCore::lineTo;
+    callback.conic_to = FreeTypeCore::conicTo;
+    callback.cubic_to = FreeTypeCore::cubicto;
+    callback.shift = 0;
+    callback.delta = 0;
+
+    FT_Error error = FT_Outline_Decompose(&m_pFace->glyph->outline, &callback, nullptr);
+    if (error)
+        qDebug() << "FT_Outline_Decompose Called Error!";
+
     return true;
 }
 
@@ -98,4 +113,30 @@ void FreeTypeCore::loadCurrentFace(void)
 void FreeTypeCore::render(QPainter* painter)
 {
 
+}
+
+int FreeTypeCore::moveTo(const FT_Vector* to, void* user)
+{
+    qDebug() << __FUNCTION__ << to->x << ", " << to->y;
+    return 0;
+}
+
+int FreeTypeCore::lineTo(const FT_Vector* to, void* user)
+{
+    qDebug() << __FUNCTION__ << to->x << ", " << to->y;
+    return 0;
+}
+
+int FreeTypeCore::conicTo(const FT_Vector* control, const FT_Vector* to, void* user)
+{
+    qDebug() << __FUNCTION__ << control->x << ", " << control->y << "; " << to->x << ", " << to->y;
+    return 0;
+}
+
+int FreeTypeCore::cubicto(const FT_Vector* control1, const FT_Vector* control2, const FT_Vector* to, void* user)
+{
+    qDebug() << __FUNCTION__ << control1->x << ", " << control1->y << "; " \
+                             << control2->x << ", " << control2->y << "; " \
+                             << to->x << ", " << to->y;
+    return 0;
 }
