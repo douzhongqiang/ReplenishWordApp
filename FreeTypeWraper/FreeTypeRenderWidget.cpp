@@ -16,6 +16,7 @@ FreeTypeRenderWidget::~FreeTypeRenderWidget()
 void FreeTypeRenderWidget::setFreeTypeCore(QSharedPointer<FreeTypeCore> freeTypeCore)
 {
     m_pFreeTypeCore = freeTypeCore;
+    this->update();
 }
 
 void FreeTypeRenderWidget::loadCurrentFont(const QString& fontPath)
@@ -24,6 +25,7 @@ void FreeTypeRenderWidget::loadCurrentFont(const QString& fontPath)
         m_pFreeTypeCore = QSharedPointer<FreeTypeCore>(new FreeTypeCore);
 
     m_pFreeTypeCore->init(fontPath);
+    this->update();
 }
 
 void FreeTypeRenderWidget::setCurrentRender(const QString& renderString)
@@ -33,11 +35,15 @@ void FreeTypeRenderWidget::setCurrentRender(const QString& renderString)
 
     ushort unicode = renderString.unicode()->unicode();
     m_pFreeTypeCore->loadChar(unicode);
+    this->update();
 }
 
 void FreeTypeRenderWidget::paintEvent(QPaintEvent* event)
 {
     QPainter pinter(this);
+
+    pinter.translate(this->width() / 2, this->height() / 2);
+    pinter.scale(1.0f, -1.0f);
 
     if (m_pFreeTypeCore)
         m_pFreeTypeCore->render(&pinter);

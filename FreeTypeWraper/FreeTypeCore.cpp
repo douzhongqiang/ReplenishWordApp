@@ -65,17 +65,18 @@ bool FreeTypeCore::loadChar(unsigned int unicode)
     loadCurrentFace();
 
 
-    FT_Outline_Funcs callback;
-    callback.move_to = FreeTypeCore::moveTo;
-    callback.line_to = FreeTypeCore::lineTo;
-    callback.conic_to = FreeTypeCore::conicTo;
-    callback.cubic_to = FreeTypeCore::cubicto;
-    callback.shift = 0;
-    callback.delta = 0;
+//    m_path.clear();
+//    FT_Outline_Funcs callback;
+//    callback.move_to = FreeTypeCore::moveTo;
+//    callback.line_to = FreeTypeCore::lineTo;
+//    callback.conic_to = FreeTypeCore::conicTo;
+//    callback.cubic_to = FreeTypeCore::cubicto;
+//    callback.shift = 0;
+//    callback.delta = 0;
 
-    FT_Error error = FT_Outline_Decompose(&m_pFace->glyph->outline, &callback, nullptr);
-    if (error)
-        qDebug() << "FT_Outline_Decompose Called Error!";
+//    FT_Error error = FT_Outline_Decompose(&m_pFace->glyph->outline, &callback, this);
+//    if (error)
+//        qDebug() << "FT_Outline_Decompose Called Error!";
 
     return true;
 }
@@ -99,42 +100,87 @@ void FreeTypeCore::loadCurrentFace(void)
         }
 
         PointInfo posInfo;
-        QPoint pos(outline.points[i].x, outline.points[i].y);
+        QPoint pos(outline.points[i].x / 64.0, outline.points[i].y / 64.0);
         posInfo.pos = pos;
         if (outline.tags[i] & 0x01)
             posInfo.pointType = 0;
-        else if (outline.tags[i] & 0x02)
+        else
             posInfo.pointType = 1;
 
         tempInfos.push_back(posInfo);
     }
 }
 
+void FreeTypeCore::drawContour(int index)
+{
+    if (m_PointInfos.size() <= index)
+        return;
+
+    QPainterPath path;
+    int nLastDrawedIndex = 0;
+    QVector<PointInfo> pointInfos = m_PointInfos[index];
+    for (int i=0; i<pointInfos.size(); ++i)
+    {
+        if (i == 0 && pointInfos[i].pointType == 0)
+        {
+            path.moveTo(pointInfos[i].pos);
+            nLastDrawedIndex = 0;
+            continue;
+        }
+
+        if (pointInfos[i].pointType == 0)
+        {
+            if (i - 1 == nLastDrawedIndex)
+                path.lineTo(pointInfos[i].pos);
+            else if (i - 2 == nLastDrawedIndex)
+                path.quadTo(pointInfos[i - 1].pos, pointInfos[i].pos);
+            else if (i - 3 == nLastDrawedIndex)
+                path.cubicTo(pointInfos[i - 2].pos, pointInfos[i - 1].pos, pointInfos[i].pos);
+
+            nLastDrawedIndex = i;
+        }
+    }
+}
+
 void FreeTypeCore::render(QPainter* painter)
 {
+//    painter->drawPath(m_path);
 
+    for (int i=0; i<m_PointInfos.size(); ++i)
+        drawContour(i);
 }
 
 int FreeTypeCore::moveTo(const FT_Vector* to, void* user)
 {
+    FreeTypeCore* pCore = (FreeTypeCore*)user;
+    pCore->m_path.moveTo(QPoint(to->x / 64.0f, to->y / 64.0f));
     qDebug() << __FUNCTION__ << to->x << ", " << to->y;
     return 0;
 }
 
 int FreeTypeCore::lineTo(const FT_Vector* to, void* user)
 {
+    FreeTypeCore* pCore = (FreeTypeCore*)user;
+    pCore->m_path.lineTo(QPoint(to->x / 64.0f, to->y / 64.0f));
     qDebug() << __FUNCTION__ << to->x << ", " << to->y;
     return 0;
 }
 
 int FreeTypeCore::conicTo(const FT_Vector* control, const FT_Vector* to, void* user)
 {
+    FreeTypeCore* pCore = (FreeTypeCore*)user;
+    pCore->m_path.quadTo(QPoint(control->x / 64.0f, control->y / 64.0f), QPoint(to->x / 64.0f, to->y / 64.0f));
     qDebug() << __FUNCTION__ << control->x << ", " << control->y << "; " << to->x << ", " << to->y;
     return 0;
 }
 
 int FreeTypeCore::cubicto(const FT_Vector* control1, const FT_Vector* control2, const FT_Vector* to, void* user)
 {
+    FreeTypeCore* pCore = (FreeTypeCore*)user;
+    pCore->m_path.cubicTo(QPoint(control1->x / 64.0f, control1->y / 64.0f), \
+                          QPoint(control2->x / 64.0f, control2->y / 64.0f), \
+                          QPoint(to->x / 64.0f, to->y / 64.0f));
+
     qDebug() << __FUNCTION__ << control1->x << ", " << control1->y << "; " \
                              << control2->x << ", " << control2->y << "; " \
                              << to->x << ", " << to->y;

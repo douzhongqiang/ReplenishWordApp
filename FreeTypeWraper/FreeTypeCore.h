@@ -6,6 +6,7 @@
 #include <ft2build.h>
 #include <freetype/freetype.h>
 #include <QPainter>
+#include <QPainterPath>
 #include "FreeTypeWraper_global.h"
 
 class FREETYPEWRAPER_EXPORT FreeTypeCore : public QObject
@@ -16,7 +17,7 @@ public:
     struct PointInfo
     {
         QPointF pos;
-        int pointType = 0;      // 0 : Normal. 1: quad Control, 2: cubic Control
+        int pointType = 0;      // 0 : Normal. 1: Control
     };
 
     typedef QVector<PointInfo> PointInfos;
@@ -42,6 +43,9 @@ private:
 
     void loadCurrentFace(void);
     QVector<PointInfos> m_PointInfos;
+    QPainterPath m_path;
+
+    void drawContour(int index);
 
 private:
     static int moveTo(const FT_Vector* to, void* user);
