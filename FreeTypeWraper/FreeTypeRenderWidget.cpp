@@ -34,7 +34,7 @@ void FreeTypeRenderWidget::setCurrentRender(const QString& renderString)
         return;
 
     ushort unicode = renderString.unicode()->unicode();
-    m_pFreeTypeCore->loadChar(unicode);
+    m_pFreeTypeCore->loadChar(unicode, renderString);
     this->update();
 }
 

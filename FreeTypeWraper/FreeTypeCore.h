@@ -32,10 +32,11 @@ public:
 
     void setRenderPixelSize(int size);
 
-    bool loadChar(unsigned int unicode);
+    bool loadChar(unsigned int unicode, QString str = "");
 
     void render(QPainter* painter);
     void biquadTo(QPainterPath& path, QPointF start, QPointF c1, QPointF c2, QPointF c3, QPointF to);
+    void bezierCurve(QPainterPath& path, const QVector<QPointF>& vec);
 
 private:
     FT_Face m_pFace = nullptr;
@@ -45,9 +46,20 @@ private:
 
     void loadCurrentFace(void);
     QVector<PointInfos> m_PointInfos;
+    PointInfos m_currentPointInfo;
+
     QPainterPath m_path;
 
-    void drawContour(int index, QPainter* painter);
+    int m_nGlyphWidth = 0;
+    int m_nGlyphHeight = 0;
+    QString m_renderString;
+
+    void drawContour(int index, QPainterPath& tempPath, QPainter* painter);
+    void drawHandle(QPainter* painter);
+
+    float factorial(int number);
+
+
 
 private:
     static int moveTo(const FT_Vector* to, void* user);
