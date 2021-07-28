@@ -18,6 +18,7 @@ public:
     {
         QPointF pos;
         int pointType = 0;      // 0 : Normal. 1: Control
+        int srcTagType = 0;
     };
 
     typedef QVector<PointInfo> PointInfos;
@@ -34,6 +35,7 @@ public:
     bool loadChar(unsigned int unicode);
 
     void render(QPainter* painter);
+    void biquadTo(QPainterPath& path, QPointF start, QPointF c1, QPointF c2, QPointF c3, QPointF to);
 
 private:
     FT_Face m_pFace = nullptr;
@@ -45,7 +47,7 @@ private:
     QVector<PointInfos> m_PointInfos;
     QPainterPath m_path;
 
-    void drawContour(int index);
+    void drawContour(int index, QPainter* painter);
 
 private:
     static int moveTo(const FT_Vector* to, void* user);

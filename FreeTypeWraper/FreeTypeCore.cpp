@@ -65,18 +65,18 @@ bool FreeTypeCore::loadChar(unsigned int unicode)
     loadCurrentFace();
 
 
-//    m_path.clear();
-//    FT_Outline_Funcs callback;
-//    callback.move_to = FreeTypeCore::moveTo;
-//    callback.line_to = FreeTypeCore::lineTo;
-//    callback.conic_to = FreeTypeCore::conicTo;
-//    callback.cubic_to = FreeTypeCore::cubicto;
-//    callback.shift = 0;
-//    callback.delta = 0;
+    m_path.clear();
+    FT_Outline_Funcs callback;
+    callback.move_to = FreeTypeCore::moveTo;
+    callback.line_to = FreeTypeCore::lineTo;
+    callback.conic_to = FreeTypeCore::conicTo;
+    callback.cubic_to = FreeTypeCore::cubicto;
+    callback.shift = 0;
+    callback.delta = 0;
 
-//    FT_Error error = FT_Outline_Decompose(&m_pFace->glyph->outline, &callback, this);
-//    if (error)
-//        qDebug() << "FT_Outline_Decompose Called Error!";
+    FT_Error error = FT_Outline_Decompose(&m_pFace->glyph->outline, &callback, this);
+    if (error)
+        qDebug() << "FT_Outline_Decompose Called Error!";
 
     return true;
 }
@@ -85,20 +85,13 @@ void FreeTypeCore::loadCurrentFace(void)
 {
     FT_Outline outline = m_pFace->glyph->outline;
 
+    m_PointInfos.clear();
     int nContours = outline.n_contours;
     int index = 0;
 
     PointInfos tempInfos;
-    for (int i=0; i<nContours; ++i)
+    for (int i=0; i<outline.n_points; ++i)
     {
-        if (outline.contours[index] == i)
-        {
-            m_PointInfos.push_back(tempInfos);
-            tempInfos.clear();
-
-            index++;
-        }
-
         PointInfo posInfo;
         QPoint pos(outline.points[i].x / 64.0, outline.points[i].y / 64.0);
         posInfo.pos = pos;
@@ -106,12 +99,32 @@ void FreeTypeCore::loadCurrentFace(void)
             posInfo.pointType = 0;
         else
             posInfo.pointType = 1;
+        posInfo.srcTagType = outline.tags[i];
 
         tempInfos.push_back(posInfo);
+
+        if (outline.contours[index] == i)
+        {
+            m_PointInfos.push_back(tempInfos);
+            tempInfos.clear();
+
+            index++;
+        }
+    }
+
+    int nIndex = 0;
+    for (auto iter = m_PointInfos.begin(); iter != m_PointInfos.end(); ++iter)
+    {
+        qDebug() << ++nIndex << "====================================";
+
+        for (auto iter2 = iter->begin(); iter2 != iter->end(); ++iter2)
+        {
+            qDebug() << iter2->pos << iter2->pointType << iter2->srcTagType;
+        }
     }
 }
 
-void FreeTypeCore::drawContour(int index)
+void FreeTypeCore::drawContour(int index, QPainter* painter)
 {
     if (m_PointInfos.size() <= index)
         return;
@@ -136,18 +149,78 @@ void FreeTypeCore::drawContour(int index)
                 path.quadTo(pointInfos[i - 1].pos, pointInfos[i].pos);
             else if (i - 3 == nLastDrawedIndex)
                 path.cubicTo(pointInfos[i - 2].pos, pointInfos[i - 1].pos, pointInfos[i].pos);
+//            else if (i - 4 == nLastDrawedIndex)
+//                biquadTo(path, )
+            else
+            {
+                while (nLastDrawedIndex != i)
+                {
+                    path.lineTo(pointInfos[++nLastDrawedIndex].pos);
+                }
+            }
 
             nLastDrawedIndex = i;
         }
+
+        if (i == pointInfos.size() - 1)
+        {
+            if (pointInfos[i].pointType == 0)
+                path.lineTo(pointInfos[0].pos);
+            else
+            {
+                if (i - 1 == nLastDrawedIndex)
+                    path.quadTo(pointInfos[i].pos, pointInfos[0].pos);
+                else if (i - 2 == nLastDrawedIndex)
+                    path.cubicTo(pointInfos[i - 1].pos, pointInfos[i].pos, pointInfos[0].pos);
+            }
+        }
     }
+
+    painter->drawPath(path);
 }
 
 void FreeTypeCore::render(QPainter* painter)
 {
-//    painter->drawPath(m_path);
+    QPen pen;
+    pen.setWidth(1);
+    pen.setColor(QColor(120, 120, 120));
+    painter->setPen(pen);
+    painter->drawPath(m_path);
+
+    painter->save();
+    painter->translate(QPoint(0, 120));
+    QVector<QColor> nColorVec;
+    nColorVec << QColor(255, 0, 0) << QColor(0, 255, 0) << QColor(0, 0, 255) << \
+                 QColor(255, 255, 0) << QColor(0, 255, 255) << QColor(255, 0, 255) << \
+                 QColor(0, 0, 0) << QColor(128, 0, 128) << QColor(128, 128, 255);
 
     for (int i=0; i<m_PointInfos.size(); ++i)
-        drawContour(i);
+    {
+        QPen pen;
+        pen.setWidth(1);
+        //pen.setColor(nColorVec[i % nColorVec.size()]);
+        painter->setPen(pen);
+
+        drawContour(i, painter);
+    }
+    painter->restore();
+}
+
+void FreeTypeCore::biquadTo(QPainterPath& path, QPointF start, QPointF c1, QPointF c2, QPointF c3, QPointF to)
+{
+
+    for (int i=0; i<=100; ++i)
+    {
+        float t = i / 100;
+        QPointF t1 = pow((1 - t), 4) * start;
+        QPointF t2 = 4 * t * pow(1-t, 3) * c1;
+        QPointF t3 = 6 * pow(t, 2) * pow(1-t, 2) * c2;
+        QPointF t4 = 4 * pow(t, 3) * pow(1-t, 1) * c3;
+        QPointF t5 = pow(t, 4) * to;
+
+        QPointF destPos = t1 + t2 + t3 + t4 + t5;
+        path.lineTo(destPos);
+    }
 }
 
 int FreeTypeCore::moveTo(const FT_Vector* to, void* user)
