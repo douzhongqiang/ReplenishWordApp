@@ -3,10 +3,13 @@
 
 #include <QWidget>
 #include <QSharedPointer>
+#include <QGraphicsView>
 #include "FreeTypeCore.h"
 #include "FreeTypeWraper_global.h"
+#include <QGraphicsScene>
 
-class FREETYPEWRAPER_EXPORT FreeTypeRenderWidget : public QWidget
+class FreeTypeOperatorBase;
+class FREETYPEWRAPER_EXPORT FreeTypeRenderWidget : public QGraphicsView
 {
     Q_OBJECT
 
@@ -19,10 +22,34 @@ public:
 
     void setFreeTypeCore(QSharedPointer<FreeTypeCore> freeTypeCore);
 
+    // Operator About
+    void setOperator(FreeTypeOperatorBase* pOperator);
+
+    // Set Select Rect About
+    void setSelectRectEnabled(bool isEnabled);
+    void setSelectRect(const QRect& rect);
+
+    void drawBackground(QPainter * painter, const QRectF & rect) override;
+    void drawForeground(QPainter * painter, const QRectF & rect) override;
+
 private:
     QSharedPointer<FreeTypeCore> m_pFreeTypeCore;
+    QGraphicsScene* m_pScene = nullptr;
 
-    void paintEvent(QPaintEvent* event);
+protected:
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
+
+    FreeTypeOperatorBase* m_pOperator = nullptr;
+
+private:
+    // Select Rect About
+    QColor m_cSelectedPenColor;
+    QColor m_cSelectedBrushColor;
+    bool m_isSelectEnabled = false;
+    QRect m_selectRect;
+    void paintSelectRect(QPainter* painter);
 };
 
 #endif

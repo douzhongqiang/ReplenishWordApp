@@ -32,7 +32,11 @@ public:
 
     void setRenderPixelSize(int size);
 
+    // Load Unicode Char
     bool loadChar(unsigned int unicode, QString str = "");
+
+    // Get Loaded Point Infos
+    void getCurrentPointInfos(QVector<PointInfos>& pointInfos);
 
     void render(QPainter* painter);
     void biquadTo(QPainterPath& path, QPointF start, QPointF c1, QPointF c2, QPointF c3, QPointF to);
@@ -58,8 +62,6 @@ private:
     void drawHandle(QPainter* painter);
 
     float factorial(int number);
-
-
 
 private:
     static int moveTo(const FT_Vector* to, void* user);
