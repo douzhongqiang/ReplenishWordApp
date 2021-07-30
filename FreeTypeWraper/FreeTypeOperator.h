@@ -79,4 +79,39 @@ private:
     QVector<qreal> m_yOldValues;
 };
 
+// ---------------------------------------------------------------------
+// Point Select Operator
+class FreeTypePointSelectOper : public FreeTypeOperatorBase
+{
+public:
+    FreeTypePointSelectOper(FreeTypeRenderWidget* pRenderWidget);
+    ~FreeTypePointSelectOper();
+
+    void disposePressEvent(QMouseEvent* event) override;
+    void disposeMoveEvent(QMouseEvent* event) override;
+    void disposeReleaseEvent(QMouseEvent* event) override;
+};
+
+// ---------------------------------------------------------------------
+// Shift Point Select Operator
+class FreeTypeShiftSelectMoveOper : public FreeTypeOperatorBase
+{
+public:
+    FreeTypeShiftSelectMoveOper(FreeTypeRenderWidget* pRenderWidget);
+    ~FreeTypeShiftSelectMoveOper();
+
+    void disposePressEvent(QMouseEvent* event) override;
+    void disposeMoveEvent(QMouseEvent* event) override;
+    void disposeReleaseEvent(QMouseEvent* event) override;
+
+private:
+    QPointF m_scenePos;
+    QList<QGraphicsItem *> m_items;
+    int m_hasAdjusted = 0;      // 0: None, 1: X , 2: Y
+    int m_nCounter = 0;
+
+    QVector<qreal> m_xValues;
+    QVector<qreal> m_yValues;
+};
+
 #endif
