@@ -5,9 +5,11 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <QWheelEvent>
+#include "FreeTypeSelectedItem.h"
 
 class FreeTypeRenderWidget;
 class QGraphicsItem;
+class FreeTypeGlyphItem;
 
 class FreeTypeOperatorBase
 {
@@ -112,6 +114,44 @@ private:
 
     QVector<qreal> m_xValues;
     QVector<qreal> m_yValues;
+};
+
+// ---------------------------------------------------------------------
+// Select Handle Operator
+class FreeTypeHandleOperator : public FreeTypeOperatorBase
+{
+public:
+    FreeTypeHandleOperator(FreeTypeRenderWidget* pRenderWidget);
+    ~FreeTypeHandleOperator();
+
+    void disposePressEvent(QMouseEvent* event) override;
+    void disposeMoveEvent(QMouseEvent* event) override;
+    void disposeReleaseEvent(QMouseEvent* event) override;
+
+    static bool needDisposeThisOper(FreeTypeRenderWidget* pRenderWidget, QMouseEvent* event, int& type);
+    static void processMouseCursor(FreeTypeRenderWidget* pRenderWidget, int type);
+
+    void setCurrentHandleType(FreeTypeSelectedItem::HandleType handleType);
+    void setShiftPressed(bool isVisible);
+
+private:
+    QPoint m_pos;
+    QPointF m_scenePos;
+
+    qreal m_startXScale = 1.0;
+    qreal m_startyScale = 1.0;
+
+    qreal m_nSelectRectWidth = 1.0;
+    qreal m_nSelectRectHeight = 1.0;
+
+    FreeTypeSelectedItem::HandleType m_handleType;
+    QRectF calcResultRect(const QRectF& rect, qreal xInterval, qreal yInterval);
+    void scaleTranslateGlyphItems(qreal xScaleValue, qreal yScaleValue);
+
+    QMap<FreeTypeGlyphItem*, QVector2D> m_scaleValueMaps;
+    QMap<FreeTypeGlyphItem*, QVector2D> m_fixedPosFactorMaps;
+
+    bool m_isShiftPressed = false;
 };
 
 #endif

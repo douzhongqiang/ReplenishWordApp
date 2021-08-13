@@ -27,6 +27,7 @@ SOURCES += \
     FreeTypeGlyphItem.cpp \
     FreeTypeOperator.cpp \
     FreeTypeRenderWidget.cpp \
+    FreeTypeSelectedItem.cpp \
     freetypewraper.cpp
 
 HEADERS += \
@@ -34,6 +35,7 @@ HEADERS += \
     FreeTypeGlyphItem.h \
     FreeTypeOperator.h \
     FreeTypeRenderWidget.h \
+    FreeTypeSelectedItem.h \
     FreeTypeWraper_global.h \
     freetypewraper.h
 

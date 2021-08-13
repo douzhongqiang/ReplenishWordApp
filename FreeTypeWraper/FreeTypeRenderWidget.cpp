@@ -3,11 +3,13 @@
 #include <QPainter>
 #include "FreeTypeOperator.h"
 #include "FreeTypeGlyphItem.h"
+#include "FreeTypeSelectedItem.h"
 
 FreeTypeRenderWidget::FreeTypeRenderWidget(QWidget* parent)
     : QGraphicsView(parent)
     , m_cSelectedPenColor(200, 100, 100)
     , m_cSelectedBrushColor(0, 0, 200, 100)
+    , m_currentOperatorType(t_MoveOperator)
 {
     m_pOperator = new FreeTypeDefOper(this);
     this->setMouseTracking(true);
@@ -17,6 +19,10 @@ FreeTypeRenderWidget::FreeTypeRenderWidget(QWidget* parent)
     this->setSceneRect(QRect(0, 0, 1200, 1200));
 
     this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+
+    initSceneItems();
+    QObject::connect(m_pScene, &QGraphicsScene::selectionChanged, \
+                     this, &FreeTypeRenderWidget::onItemSelectionChanged);
 }
 
 FreeTypeRenderWidget::~FreeTypeRenderWidget()
@@ -61,6 +67,9 @@ void FreeTypeRenderWidget::setCurrentRender(const QString& renderString)
         pGlyphItem->setCurrentPointInfo(*iter);
         m_pScene->addItem(pGlyphItem);
         pGlyphItem->setPos(50, 100);
+
+        QObject::connect(pGlyphItem, &FreeTypeGlyphItem::signalItemPosChanged, \
+                         this, &FreeTypeRenderWidget::onItemSelectionChanged);
     }
 }
 
@@ -133,4 +142,52 @@ void FreeTypeRenderWidget::drawForeground(QPainter * painter, const QRectF & rec
     painter->drawRect(m_selectRect);
 
     return QGraphicsView::drawForeground(painter, rect);
+}
+
+// Set / Get Current Operator Tool
+void FreeTypeRenderWidget::setCurrentOperatorTool(OperatorType type)
+{
+    m_currentOperatorType = type;
+}
+
+FreeTypeRenderWidget::OperatorType FreeTypeRenderWidget::getCurrentOperatorTool(void)
+{
+    return m_currentOperatorType;
+}
+
+void FreeTypeRenderWidget::initSceneItems(void)
+{
+    m_pSelectItem = new FreeTypeSelectedItem;
+    m_pScene->addItem(m_pSelectItem);
+
+    m_pSelectItem->setZValue(10);
+    m_pSelectItem->setVisible(false);
+}
+
+void FreeTypeRenderWidget::onItemSelectionChanged(void)
+{
+    auto selectedItems = m_pScene->selectedItems();
+    if (selectedItems.size() <= 0)
+    {
+        m_pSelectItem->setVisible(false);
+        return;
+    }
+
+    QPainterPath path;
+    for (auto iter = selectedItems.begin(); iter != selectedItems.end(); ++iter)
+    {
+        QRectF rectF = (*iter)->boundingRect();
+        QPointF pos = (*iter)->pos();
+
+        rectF = QRectF(rectF.x() + pos.x(), rectF.y() + pos.y(), rectF.width(), rectF.height());
+        path.addRect(rectF);
+    }
+
+    m_pSelectItem->setSelectedRect(path.boundingRect());
+    m_pSelectItem->setVisible(true);
+}
+
+FreeTypeSelectedItem* FreeTypeRenderWidget::getScaledItemHandleItem(void)
+{
+    return m_pSelectItem;
 }

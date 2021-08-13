@@ -55,3 +55,8 @@ void ReplenishWordMainWidget::onClickedButton(void)
     QString str = m_pInputLineEdit->text();
     m_pReplenishWidget->setCurrentRender(str);
 }
+
+void ReplenishWordMainWidget::setCurrentOperatorMode(FreeTypeRenderWidget::OperatorType type)
+{
+    m_pReplenishWidget->setCurrentOperatorTool(type);
+}

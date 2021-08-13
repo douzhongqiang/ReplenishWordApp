@@ -15,6 +15,8 @@ public:
     ReplenishWordMainWidget(QWidget* parent = nullptr);
     ~ReplenishWordMainWidget();
 
+    void setCurrentOperatorMode(FreeTypeRenderWidget::OperatorType type);
+
 private:
     FreeTypeRenderWidget* m_pReplenishWidget = nullptr;
     QLineEdit* m_pInputLineEdit = nullptr;

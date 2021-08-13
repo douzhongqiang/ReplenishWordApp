@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QToolBar>
+#include <QToolButton>
 #include "ReplenishWordMainWidget.h"
 
 class MainWindow : public QMainWindow
@@ -14,6 +16,15 @@ public:
 
 private:
     ReplenishWordMainWidget* m_pMainWidget = nullptr;
+    QToolBar* m_pToolBar = nullptr;
+
+    void initToolBar(void);
+
+private slots:
+    void onMoveButtonCheckedStatusChanged(void);
+    void onResizeButtonCheckedStatusChanged(void);
+    void onRotateButtonCheckedStatusChanged(void);
+
 };
 
 #endif // MAINWINDOW_H
