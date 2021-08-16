@@ -23,6 +23,7 @@ else{
 }
 
 SOURCES += \
+    FreeTypeConfig.cpp \
     FreeTypeCore.cpp \
     FreeTypeGlyphItem.cpp \
     FreeTypeOperator.cpp \
@@ -31,6 +32,7 @@ SOURCES += \
     freetypewraper.cpp
 
 HEADERS += \
+    FreeTypeConfig.h \
     FreeTypeCore.h \
     FreeTypeGlyphItem.h \
     FreeTypeOperator.h \

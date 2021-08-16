@@ -1,4 +1,5 @@
 #include "FreeTypeSelectedItem.h"
+#include "FreeTypeConfig.h"
 #include <QPainter>
 
 FreeTypeSelectedItem::FreeTypeSelectedItem(QGraphicsItem* parentItem)

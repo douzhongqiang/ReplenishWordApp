@@ -1,4 +1,5 @@
 #include "FreeTypeGlyphItem.h"
+#include "FreeTypeConfig.h"
 #include <QDebug>
 
 FreeTypeGlyphItem::FreeTypeGlyphItem(QGraphicsItem* parentItem)
@@ -8,6 +9,9 @@ FreeTypeGlyphItem::FreeTypeGlyphItem(QGraphicsItem* parentItem)
 {
     this->setFlag(QGraphicsItem::ItemIsSelectable, true);
     this->setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+
+    QObject::connect(g_FreeTypeConfig, &FreeTypeConfig::handleEnabledChanged, \
+                     this, &FreeTypeGlyphItem::onHandleEnabledChanged);
 }
 
 FreeTypeGlyphItem::~FreeTypeGlyphItem()
@@ -47,13 +51,10 @@ void FreeTypeGlyphItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
     // Draw Selected
     if (this->isSelected())
     {
-        // Draw Selected Rect
-        painter->drawRect(m_path.boundingRect());
-
-//        // Draw Selected Handle
-//        QVector<QRectF> handleRects;
-//        getHandleRects(handleRects);
-//        painter->drawRects(handleRects);
+        if (!g_FreeTypeConfig->isHandleEnabled())
+            painter->drawRect(m_path.boundingRect());       // Draw Selected Rect
+        else
+            drawControlPoints(painter);                     // Draw Control Point
     }
 }
 
@@ -209,4 +210,83 @@ void FreeTypeGlyphItem::getHandleRects(QVector<QRectF>& rects)
     rects << QRectF(rect.bottomRight().x() - m_nInterval / 2.0, \
                     rect.bottomRight().y() - m_nInterval / 2.0, \
                     m_nInterval, m_nInterval);
+}
+
+// Draw Control And Points
+void FreeTypeGlyphItem::drawControlPoints(QPainter* painter)
+{
+    painter->save();
+
+    QPen pen = painter->pen();
+    pen.setWidth(4);
+    pen.setColor(QColor(255, 0, 0));
+    painter->setPen(pen);
+    painter->setRenderHint(QPainter::Antialiasing, true);
+
+    for (auto iter = m_pointInfos.begin(); iter != m_pointInfos.end(); ++iter)
+    {
+        if (iter->pointType == 0)
+            painter->drawPoint(iter->pos);
+    }
+
+    // Draw Control
+    drawControlHandlePoints(painter);
+
+    painter->restore();
+}
+
+void FreeTypeGlyphItem::drawControlHandlePoints(QPainter* painter)
+{
+    int nCount = 0;
+    for (auto iter = m_pointInfos.begin(); iter != m_pointInfos.end(); ++iter)
+    {
+        if (iter->pointType == 0)
+            nCount++;
+    }
+
+    if (m_SelectedIndex < 0 || m_SelectedIndex >= nCount)
+        return;
+
+    painter->save();
+    QPen pen = painter->pen();
+    pen.setColor(QColor(200, 200, 50));
+    painter->setPen(pen);
+
+    // Draw Point
+    QPointF pos = m_pointInfos[m_SelectedIndex].pos;
+    painter->drawPoint(pos);
+
+    // Draw Control Line
+    if (m_SelectedIndex - 1 >= 0 && m_pointInfos[m_SelectedIndex - 1].pointType != 0)
+    {
+        pen.setWidth(1);
+        painter->setPen(pen);
+
+        QPointF pos1 = m_pointInfos[m_SelectedIndex - 1].pos;
+        painter->drawLine(pos1, pos);
+
+        pen.setWidth(4);
+        painter->setPen(pen);
+        painter->drawPoint(pos1);
+    }
+
+    if (m_SelectedIndex + 1 < nCount && m_pointInfos[m_SelectedIndex + 1].pointType != 0)
+    {
+        pen.setWidth(1);
+        painter->setPen(pen);
+
+        QPointF pos1 = m_pointInfos[m_SelectedIndex + 1].pos;
+        painter->drawLine(pos1, pos);
+
+        pen.setWidth(4);
+        painter->setPen(pen);
+        painter->drawPoint(pos1);
+    }
+    painter->restore();
+}
+
+void FreeTypeGlyphItem::onHandleEnabledChanged(bool isEnabled)
+{
+    if (this->isSelected())
+        this->update();
 }

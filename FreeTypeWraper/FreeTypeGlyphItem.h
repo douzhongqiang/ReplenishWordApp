@@ -47,8 +47,16 @@ private:
 
     QPointF m_fixedPos;
 
+    // Draw Control And Points
+    void drawControlPoints(QPainter* painter);
+    int m_SelectedIndex = 4;
+    void drawControlHandlePoints(QPainter* painter);
+
 signals:
     void signalItemPosChanged(void);
+
+private slots:
+    void onHandleEnabledChanged(bool isEnabled);
 };
 
 #endif

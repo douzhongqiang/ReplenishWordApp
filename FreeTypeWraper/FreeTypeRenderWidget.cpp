@@ -4,6 +4,7 @@
 #include "FreeTypeOperator.h"
 #include "FreeTypeGlyphItem.h"
 #include "FreeTypeSelectedItem.h"
+#include "FreeTypeConfig.h"
 
 FreeTypeRenderWidget::FreeTypeRenderWidget(QWidget* parent)
     : QGraphicsView(parent)
@@ -22,6 +23,8 @@ FreeTypeRenderWidget::FreeTypeRenderWidget(QWidget* parent)
 
     initSceneItems();
     QObject::connect(m_pScene, &QGraphicsScene::selectionChanged, \
+                     this, &FreeTypeRenderWidget::onItemSelectionChanged);
+    QObject::connect(g_FreeTypeConfig, &FreeTypeConfig::handleEnabledChanged, \
                      this, &FreeTypeRenderWidget::onItemSelectionChanged);
 }
 
@@ -89,6 +92,18 @@ void FreeTypeRenderWidget::mouseMoveEvent(QMouseEvent *event)
 {
     m_pOperator->disposeMoveEvent(event);
     return QWidget::mouseMoveEvent(event);
+}
+
+void FreeTypeRenderWidget::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Delete)
+    {
+        auto items = this->scene()->selectedItems();
+        for (auto iter = items.begin(); iter != items.end(); ++iter)
+            delete (*iter);
+    }
+
+    return QWidget::keyPressEvent(event);
 }
 
 // Set Select Rect About
@@ -167,7 +182,7 @@ void FreeTypeRenderWidget::initSceneItems(void)
 void FreeTypeRenderWidget::onItemSelectionChanged(void)
 {
     auto selectedItems = m_pScene->selectedItems();
-    if (selectedItems.size() <= 0)
+    if (selectedItems.size() <= 0 || g_FreeTypeConfig->isHandleEnabled())
     {
         m_pSelectItem->setVisible(false);
         return;
