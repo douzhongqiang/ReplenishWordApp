@@ -17,14 +17,26 @@ public:
     void setHandleEnabled(bool isEnabled);
     bool isHandleEnabled(void);
 
+    // set/get handle delete Mode
+    void setHandlePointDeleteMode(bool isEnabled);
+    bool isHandlePointDeleteMode(void);
+
+    // set/get handle spit point enabled
+    void setHandlePointSpitEnabled(bool isEnabled);
+    bool isHandlePointSpitEnabled(void);
+
 private:
     FreeTypeConfig(QObject* parent = nullptr);
     ~FreeTypeConfig();
 
     bool m_isHandleEnabled = false;
+    bool m_isHandlePointDeleteMode = false;
+    bool m_isHandleSpitPointEnabled = false;
 
 signals:
     void handleEnabledChanged(bool isEnabled);
+    void handlePointDeleteModeChanged(bool isEnabled);
+    void handlePointSpitEnabledChanged(bool isEnabled);
 };
 
 #endif

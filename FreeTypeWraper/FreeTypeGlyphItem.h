@@ -15,12 +15,24 @@ public:
     ~FreeTypeGlyphItem();
 
     void setCurrentPointInfo(const FreeTypeCore::PointInfos& pointInfo);
+    void getCurrentPointInfo(FreeTypeCore::PointInfos& pointInfos);
 
     // Set/Get Scaled Vallue
     void setScaleValue(qreal xValue, qreal yValue);
     void getScaleValue(qreal& xValue, qreal& yValue);
 
     void setScaleFixedPos(const QPointF& pos);
+
+    // Handle About
+    void setCurrentHandleIndex(int index);
+    int getCurrentHandleIndex(void);
+    bool getSelectLeftHandlePoint(QPointF& pos, int& index);
+    bool getSelectRightHandlePoint(QPointF& pos, int& index);
+
+    // Changed Point
+    void changedPoint(int index, const QPointF& pos);
+    // remove Point
+    void removePoint(int index);
 
 public:
     QRectF boundingRect() const override;
@@ -49,7 +61,7 @@ private:
 
     // Draw Control And Points
     void drawControlPoints(QPainter* painter);
-    int m_SelectedIndex = 4;
+    int m_SelectedIndex = -1;
     void drawControlHandlePoints(QPainter* painter);
 
 signals:

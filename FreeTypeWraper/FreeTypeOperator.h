@@ -154,4 +154,46 @@ private:
     bool m_isShiftPressed = false;
 };
 
+// ---------------------------------------------------------------------
+// Point Select Operator
+class FreeTypePointHandleOperator : public FreeTypeOperatorBase
+{
+public:
+    FreeTypePointHandleOperator(FreeTypeRenderWidget* pRenderWidget);
+    ~FreeTypePointHandleOperator();
+
+    void disposePressEvent(QMouseEvent* event) override;
+    void disposeMoveEvent(QMouseEvent* event) override;
+    void disposeReleaseEvent(QMouseEvent* event) override;
+
+    static bool needDisposeThisOper(FreeTypeRenderWidget* pRenderWidget, QMouseEvent* event, \
+                                    FreeTypeGlyphItem*& pItem, int& index, int& pointType);
+
+    void initCurrentInfo(int index, FreeTypeGlyphItem* pItem, int pointType);
+
+private:
+    int m_nCurrentSelectedIndex = -1;
+    FreeTypeGlyphItem* m_pGlyphItem = nullptr;
+    int m_operatorPointType = 0;
+};
+
+// ---------------------------------------------------------------------
+// Point Delete Operator
+class FreeTypePointHandleDeleteOperator : public FreeTypeOperatorBase
+{
+public:
+    FreeTypePointHandleDeleteOperator(FreeTypeRenderWidget* pRenderWidget);
+    ~FreeTypePointHandleDeleteOperator();
+
+    void disposePressEvent(QMouseEvent* event) override;
+    void disposeMoveEvent(QMouseEvent* event) override;
+    void disposeReleaseEvent(QMouseEvent* event) override;
+
+    void initCurrentInfo(int index, FreeTypeGlyphItem* pItem);
+
+private:
+    int m_nCurrentSelectedIndex = -1;
+    FreeTypeGlyphItem* m_pGlyphItem = nullptr;
+};
+
 #endif

@@ -2,6 +2,8 @@
 #include "FreeTypeRenderWidget.h"
 #include "FreeTypeSelectedItem.h"
 #include "FreeTypeGlyphItem.h"
+#include "FreeTypeTool.h"
+#include "FreeTypeConfig.h"
 #include <QGraphicsItem>
 #include <QDebug>
 
@@ -62,8 +64,29 @@ void FreeTypeDefOper::disposePressEvent(QMouseEvent* event)
 
     bool hasEnteredShiftKey = event->modifiers() & Qt::ShiftModifier;
 
+    // For Point Handle Select
+    FreeTypeGlyphItem* pGlyphItem = nullptr;
+    int nIndex = -1, nPointType = 0;
+    bool result = FreeTypePointHandleOperator::needDisposeThisOper(m_pRenderWidget, event, pGlyphItem, nIndex, nPointType);
+    if (result && g_FreeTypeConfig->isHandleEnabled())
+    {
+        if (g_FreeTypeConfig->isHandlePointDeleteMode())
+        {
+
+        }
+        else
+        {
+            FreeTypePointHandleOperator* pPointHandleOperator = new FreeTypePointHandleOperator(m_pRenderWidget);
+            m_pRenderWidget->setOperator(pPointHandleOperator);
+            pPointHandleOperator->initCurrentInfo(nIndex, pGlyphItem, nPointType);
+            pPointHandleOperator->disposePressEvent(event);
+        }
+
+        return;
+    }
+
     int type = 0;
-    bool result = FreeTypeHandleOperator::needDisposeThisOper(m_pRenderWidget, event, type);
+    result = FreeTypeHandleOperator::needDisposeThisOper(m_pRenderWidget, event, type);
     if (result)
     {
         // Set FreeTypeMoveSelectedOper
@@ -105,6 +128,20 @@ void FreeTypeDefOper::disposePressEvent(QMouseEvent* event)
 
 void FreeTypeDefOper::disposeMoveEvent(QMouseEvent* event)
 {
+    if (g_FreeTypeConfig->isHandleEnabled())
+    {
+        // On Handle To Mouse Cursor
+        FreeTypeGlyphItem* pGlyphItem = nullptr;
+        int index = -1, pointType = 0;
+        bool result = FreeTypePointHandleOperator::needDisposeThisOper(m_pRenderWidget, event, pGlyphItem, index, pointType);
+        if (result)
+            m_pRenderWidget->viewport()->setCursor(Qt::PointingHandCursor);
+        else
+            m_pRenderWidget->viewport()->setCursor(Qt::ArrowCursor);
+        return;
+    }
+
+
     int type = 0;
     bool result = FreeTypeHandleOperator::needDisposeThisOper(m_pRenderWidget, event, type);
     if (!result)
@@ -639,4 +676,145 @@ void FreeTypeHandleOperator::processMouseCursor(FreeTypeRenderWidget* pRenderWid
     }
 
     return pRenderWidget->viewport()->setCursor(Qt::ArrowCursor);
+}
+
+// ---------------------------------------------------------------------
+// Point Select Operator
+FreeTypePointHandleOperator::FreeTypePointHandleOperator(FreeTypeRenderWidget* pRenderWidget)
+    :FreeTypeOperatorBase(pRenderWidget)
+{
+
+}
+
+FreeTypePointHandleOperator::~FreeTypePointHandleOperator()
+{
+
+}
+
+void FreeTypePointHandleOperator::disposePressEvent(QMouseEvent* event)
+{
+    if (m_pGlyphItem == nullptr || m_nCurrentSelectedIndex < 0)
+        return;
+
+    if (m_operatorPointType == 0)
+        m_pGlyphItem->setCurrentHandleIndex(m_nCurrentSelectedIndex);
+}
+
+void FreeTypePointHandleOperator::disposeMoveEvent(QMouseEvent* event)
+{
+    if (m_pGlyphItem == nullptr || m_nCurrentSelectedIndex < 0)
+        return;
+
+    QPointF scenePos = m_pRenderWidget->mapToScene(event->pos());
+    QPointF itemPos = m_pGlyphItem->mapFromScene(scenePos);
+
+    m_pGlyphItem->changedPoint(m_nCurrentSelectedIndex, itemPos);
+}
+
+void FreeTypePointHandleOperator::disposeReleaseEvent(QMouseEvent* event)
+{
+    m_operatorPointType = 0;
+    FreeTypeDefOper* pDefOper = new FreeTypeDefOper(m_pRenderWidget);
+    m_pRenderWidget->setOperator(pDefOper);
+}
+
+void FreeTypePointHandleOperator::initCurrentInfo(int index, FreeTypeGlyphItem* pItem, int pointType)
+{
+    m_nCurrentSelectedIndex = index;
+    m_pGlyphItem = pItem;
+    m_operatorPointType = pointType;
+}
+
+bool FreeTypePointHandleOperator::needDisposeThisOper(FreeTypeRenderWidget* pRenderWidget, QMouseEvent* event, \
+                                                      FreeTypeGlyphItem*& pItem, int& index, int& pointType)
+{
+    QPointF scenePos = pRenderWidget->mapToScene(event->pos());
+    auto selectedItems = pRenderWidget->scene()->selectedItems();
+    qreal r = 6;
+
+    for (auto iter = selectedItems.begin(); iter != selectedItems.end(); ++iter)
+    {
+        FreeTypeGlyphItem* pGlyphItem = dynamic_cast<FreeTypeGlyphItem*>(*iter);
+        if (pGlyphItem == nullptr)
+            continue;
+
+        FreeTypeCore::PointInfos pointInfos;
+        pGlyphItem->getCurrentPointInfo(pointInfos);
+
+        // Adjust Normal Point
+        QPointF itemPos = pGlyphItem->mapFromScene(scenePos);
+        for (int i=0; i<pointInfos.size(); ++i)
+        {
+            if (pointInfos[i].pointType == 0 && g_FreeTypeTool->getDistance(pointInfos[i].pos, itemPos) < r)
+            {
+                pItem = pGlyphItem;
+                index = i;
+                pointType = pointInfos[i].pointType;
+                return true;
+            }
+        }
+
+        int tempIndex = -1;
+        QPointF pos;
+        // Adjust Handle Point - left
+        bool result = pGlyphItem->getSelectLeftHandlePoint(pos, tempIndex);
+        if (result && g_FreeTypeTool->getDistance(pos, itemPos) < r)
+        {
+            pItem = pGlyphItem;
+            index = tempIndex;
+            pointType = pointInfos[index].pointType;
+
+            return true;
+        }
+        // Adjust Handle Point - right
+        result = pGlyphItem->getSelectRightHandlePoint(pos, tempIndex);
+        if (result && g_FreeTypeTool->getDistance(pos, itemPos) < r)
+        {
+            pItem = pGlyphItem;
+            index = tempIndex;
+            pointType = pointInfos[index].pointType;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// ---------------------------------------------------------------------
+// Point Delete Operator
+FreeTypePointHandleDeleteOperator::FreeTypePointHandleDeleteOperator(FreeTypeRenderWidget* pRenderWidget)
+    :FreeTypeOperatorBase(pRenderWidget)
+{
+
+}
+
+FreeTypePointHandleDeleteOperator::~FreeTypePointHandleDeleteOperator()
+{
+
+}
+
+void FreeTypePointHandleDeleteOperator::initCurrentInfo(int index, FreeTypeGlyphItem* pItem)
+{
+    m_nCurrentSelectedIndex = index;
+    m_pGlyphItem = pItem;
+}
+
+void FreeTypePointHandleDeleteOperator::disposePressEvent(QMouseEvent* event)
+{
+    if (m_pGlyphItem == nullptr || m_nCurrentSelectedIndex < 0)
+        return;
+
+    m_pGlyphItem->removePoint(m_nCurrentSelectedIndex);
+}
+
+void FreeTypePointHandleDeleteOperator::disposeMoveEvent(QMouseEvent* event)
+{
+
+}
+
+void FreeTypePointHandleDeleteOperator::disposeReleaseEvent(QMouseEvent* event)
+{
+    FreeTypeDefOper* pDefOper = new FreeTypeDefOper(m_pRenderWidget);
+    m_pRenderWidget->setOperator(pDefOper);
 }

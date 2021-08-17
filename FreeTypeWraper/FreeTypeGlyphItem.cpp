@@ -29,6 +29,11 @@ void FreeTypeGlyphItem::setCurrentPointInfo(const FreeTypeCore::PointInfos& poin
     m_fixedPos = this->boundingRect().topLeft();
 }
 
+void FreeTypeGlyphItem::getCurrentPointInfo(FreeTypeCore::PointInfos& pointInfos)
+{
+    pointInfos = m_pointInfos;
+}
+
 QRectF FreeTypeGlyphItem::boundingRect() const
 {
     return m_path.boundingRect();
@@ -166,6 +171,74 @@ void FreeTypeGlyphItem::setScaleFixedPos(const QPointF& pos)
     m_fixedPos = pos;
 }
 
+void FreeTypeGlyphItem::setCurrentHandleIndex(int index)
+{
+    m_SelectedIndex = index;
+    this->update();
+}
+
+int FreeTypeGlyphItem::getCurrentHandleIndex(void)
+{
+    return m_SelectedIndex;
+}
+
+bool FreeTypeGlyphItem::getSelectLeftHandlePoint(QPointF& pos, int& index)
+{
+    if (m_SelectedIndex - 1 >= 0 && m_pointInfos[m_SelectedIndex - 1].pointType != 0)
+    {
+        pos = m_pointInfos[m_SelectedIndex - 1].pos;
+        index = m_SelectedIndex - 1;
+
+        return true;
+    }
+
+    return false;
+}
+
+bool FreeTypeGlyphItem::getSelectRightHandlePoint(QPointF& pos, int& index)
+{
+    if (m_SelectedIndex + 1 < m_pointInfos.size() && m_pointInfos[m_SelectedIndex + 1].pointType != 0)
+    {
+        pos = m_pointInfos[m_SelectedIndex + 1].pos;
+        index = m_SelectedIndex + 1;
+
+        return true;
+    }
+
+    return false;
+}
+
+void FreeTypeGlyphItem::changedPoint(int index, const QPointF& pos)
+{
+    if (m_pointInfos.size() <= index || index < 0)
+        return;
+
+    m_pointInfos[index].pos = pos;
+    syncToPath();
+
+    this->update();
+}
+
+void FreeTypeGlyphItem::removePoint(int index)
+{
+    if (m_pointInfos.size() <= index || index < 0)
+        return;
+
+    if (m_pointInfos[index].pointType != 0)
+        return;
+
+    QPointF tempPos;
+    bool hasLeftControl = getSelectLeftHandlePoint(tempPos, index);
+    bool hasRightControl = getSelectRightHandlePoint(tempPos, index);
+
+    // remove Point And Control Point
+    m_pointInfos.removeAt(index);
+    if (hasLeftControl)
+        m_pointInfos.removeAt(index - 1);
+    else if (hasRightControl)
+        m_pointInfos.removeAt(index + 1);
+}
+
 void FreeTypeGlyphItem::getHandleRects(QVector<QRectF>& rects)
 {
     rects.clear();
@@ -237,12 +310,12 @@ void FreeTypeGlyphItem::drawControlPoints(QPainter* painter)
 
 void FreeTypeGlyphItem::drawControlHandlePoints(QPainter* painter)
 {
-    int nCount = 0;
-    for (auto iter = m_pointInfos.begin(); iter != m_pointInfos.end(); ++iter)
-    {
-        if (iter->pointType == 0)
-            nCount++;
-    }
+    int nCount = m_pointInfos.size();
+//    for (auto iter = m_pointInfos.begin(); iter != m_pointInfos.end(); ++iter)
+//    {
+//        if (iter->pointType == 0)
+//            nCount++;
+//    }
 
     if (m_SelectedIndex < 0 || m_SelectedIndex >= nCount)
         return;
