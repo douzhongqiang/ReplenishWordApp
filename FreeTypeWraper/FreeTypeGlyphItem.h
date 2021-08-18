@@ -33,6 +33,8 @@ public:
     void changedPoint(int index, const QPointF& pos);
     // remove Point
     void removePoint(int index);
+    // Add Copy Point
+    void addCopyPoint(int index);
 
 public:
     QRectF boundingRect() const override;
@@ -63,6 +65,9 @@ private:
     void drawControlPoints(QPainter* painter);
     int m_SelectedIndex = -1;
     void drawControlHandlePoints(QPainter* painter);
+
+    // When can Spit To Two Item, This Spit
+    void processSpitItem(void);
 
 signals:
     void signalItemPosChanged(void);

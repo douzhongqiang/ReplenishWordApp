@@ -17,7 +17,7 @@ public:
     struct PointInfo
     {
         QPointF pos;
-        int pointType = 0;      // 0 : Normal. 1: Control
+        int pointType = 0;      // 0 : Normal. 1: Control, 2: moveToPoint
         int srcTagType = 0;
     };
 

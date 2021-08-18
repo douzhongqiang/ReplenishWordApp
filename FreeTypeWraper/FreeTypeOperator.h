@@ -196,4 +196,23 @@ private:
     FreeTypeGlyphItem* m_pGlyphItem = nullptr;
 };
 
+// ---------------------------------------------------------------------
+// Point Spit Operator
+class FreeTypePointHandleSpitOperator : public FreeTypeOperatorBase
+{
+public:
+    FreeTypePointHandleSpitOperator(FreeTypeRenderWidget* pRenderWidget);
+    ~FreeTypePointHandleSpitOperator();
+
+    void disposePressEvent(QMouseEvent* event) override;
+    void disposeMoveEvent(QMouseEvent* event) override;
+    void disposeReleaseEvent(QMouseEvent* event) override;
+
+    void initCurrentInfo(int index, FreeTypeGlyphItem* pItem);
+
+private:
+    int m_nCurrentSelectedIndex = -1;
+    FreeTypeGlyphItem* m_pGlyphItem = nullptr;
+};
+
 #endif

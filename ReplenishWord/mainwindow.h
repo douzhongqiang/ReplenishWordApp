@@ -24,7 +24,10 @@ private slots:
     void onMoveButtonCheckedStatusChanged(void);
     void onResizeButtonCheckedStatusChanged(void);
     void onRotateButtonCheckedStatusChanged(void);
+
     void onHandleButtonCheckedStatusChanged(void);
+    void onDeleteButtonCheckedStatusChanged(void);
+    void onSpitButtonCheckedStatusChanged(void);
 };
 
 #endif // MAINWINDOW_H

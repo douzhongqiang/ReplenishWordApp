@@ -1,5 +1,6 @@
 #include "FreeTypeGlyphItem.h"
 #include "FreeTypeConfig.h"
+#include <QGraphicsScene>
 #include <QDebug>
 
 FreeTypeGlyphItem::FreeTypeGlyphItem(QGraphicsItem* parentItem)
@@ -96,6 +97,11 @@ void FreeTypeGlyphItem::syncToPath(void)
             nLastDrawedIndex = 0;
             continue;
         }
+        else if (m_pointInfos[i].pointType == 2)
+        {
+            m_path.moveTo(m_pointInfos[i].pos);
+            nLastDrawedIndex = i;
+        }
 
         if (m_pointInfos[i].pointType == 0)
         {
@@ -117,7 +123,7 @@ void FreeTypeGlyphItem::syncToPath(void)
         {
             if (m_pointInfos[i].pointType == 0)
                 m_path.lineTo(m_pointInfos[0].pos);
-            else
+            else if (m_pointInfos[i].pointType == 1)
             {
                 if (i - 1 == nLastDrawedIndex)
                     m_path.quadTo(m_pointInfos[i].pos, m_pointInfos[0].pos);
@@ -184,7 +190,7 @@ int FreeTypeGlyphItem::getCurrentHandleIndex(void)
 
 bool FreeTypeGlyphItem::getSelectLeftHandlePoint(QPointF& pos, int& index)
 {
-    if (m_SelectedIndex - 1 >= 0 && m_pointInfos[m_SelectedIndex - 1].pointType != 0)
+    if (m_SelectedIndex - 1 >= 0 && m_pointInfos[m_SelectedIndex - 1].pointType == 1)
     {
         pos = m_pointInfos[m_SelectedIndex - 1].pos;
         index = m_SelectedIndex - 1;
@@ -197,7 +203,7 @@ bool FreeTypeGlyphItem::getSelectLeftHandlePoint(QPointF& pos, int& index)
 
 bool FreeTypeGlyphItem::getSelectRightHandlePoint(QPointF& pos, int& index)
 {
-    if (m_SelectedIndex + 1 < m_pointInfos.size() && m_pointInfos[m_SelectedIndex + 1].pointType != 0)
+    if (m_SelectedIndex + 1 < m_pointInfos.size() && m_pointInfos[m_SelectedIndex + 1].pointType == 1)
     {
         pos = m_pointInfos[m_SelectedIndex + 1].pos;
         index = m_SelectedIndex + 1;
@@ -237,6 +243,77 @@ void FreeTypeGlyphItem::removePoint(int index)
         m_pointInfos.removeAt(index - 1);
     else if (hasRightControl)
         m_pointInfos.removeAt(index + 1);
+
+    syncToPath();
+
+    this->update();
+}
+
+void FreeTypeGlyphItem::addCopyPoint(int index)
+{
+    if (m_pointInfos.size() <= index || index < 0)
+        return;
+
+    if (m_pointInfos[index].pointType != 0)
+        return;
+
+    FreeTypeCore::PointInfo pointInfo = m_pointInfos[index];
+    pointInfo.pointType = 2;
+    m_pointInfos.insert(index + 1, pointInfo);
+
+    processSpitItem();
+
+    syncToPath();
+
+    this->update();
+}
+
+void FreeTypeGlyphItem::processSpitItem(void)
+{
+    int nSpitPointCount = 0;
+    bool needSpit = false;
+    for (auto iter = m_pointInfos.begin(); iter != m_pointInfos.end(); ++iter)
+    {
+        if (iter->pointType == 2)
+            nSpitPointCount++;
+
+        if (nSpitPointCount >= 2)
+        {
+            needSpit = true;
+            break;
+        }
+    }
+
+    if (!needSpit)
+        return;
+
+    FreeTypeCore::PointInfos tempPoints1;       // Current Item
+    FreeTypeCore::PointInfos tempPoints2;       // Spit Item
+
+    // Spit To Two Item
+    bool isFirst = m_pointInfos[0].pointType != 2;
+    for (auto iter = m_pointInfos.begin(); iter != m_pointInfos.end(); ++iter)
+    {
+        if (iter->pointType == 2)
+            isFirst = !isFirst;
+
+        if (isFirst)
+            tempPoints1 << *iter;
+        else
+            tempPoints2 << *iter;
+    }
+
+    // Create Other Item
+    if (tempPoints2.size() > 1)
+    {
+        tempPoints2[0].pointType = 0;
+        FreeTypeGlyphItem* pSubItem = new FreeTypeGlyphItem;
+        pSubItem->setPos(this->pos());
+        pSubItem->setCurrentPointInfo(tempPoints2);
+        this->scene()->addItem(pSubItem);
+    }
+
+    m_pointInfos = tempPoints1;
 }
 
 void FreeTypeGlyphItem::getHandleRects(QVector<QRectF>& rects)
@@ -298,7 +375,7 @@ void FreeTypeGlyphItem::drawControlPoints(QPainter* painter)
 
     for (auto iter = m_pointInfos.begin(); iter != m_pointInfos.end(); ++iter)
     {
-        if (iter->pointType == 0)
+        if (iter->pointType == 0 || iter->pointType == 2)
             painter->drawPoint(iter->pos);
     }
 
@@ -330,7 +407,7 @@ void FreeTypeGlyphItem::drawControlHandlePoints(QPainter* painter)
     painter->drawPoint(pos);
 
     // Draw Control Line
-    if (m_SelectedIndex - 1 >= 0 && m_pointInfos[m_SelectedIndex - 1].pointType != 0)
+    if (m_SelectedIndex - 1 >= 0 && m_pointInfos[m_SelectedIndex - 1].pointType == 1)
     {
         pen.setWidth(1);
         painter->setPen(pen);
@@ -343,7 +420,7 @@ void FreeTypeGlyphItem::drawControlHandlePoints(QPainter* painter)
         painter->drawPoint(pos1);
     }
 
-    if (m_SelectedIndex + 1 < nCount && m_pointInfos[m_SelectedIndex + 1].pointType != 0)
+    if (m_SelectedIndex + 1 < nCount && m_pointInfos[m_SelectedIndex + 1].pointType == 1)
     {
         pen.setWidth(1);
         painter->setPen(pen);

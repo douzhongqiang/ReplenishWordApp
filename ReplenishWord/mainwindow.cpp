@@ -44,6 +44,19 @@ void MainWindow::initToolBar(void)
     pHandleButton->setCheckable(true);
     QObject::connect(pHandleButton, &QToolButton::clicked, this, &MainWindow::onHandleButtonCheckedStatusChanged);
 
+    // Delete Handle
+    QToolButton* pDeleteHandleButton = new QToolButton;
+    m_pToolBar->addWidget(pDeleteHandleButton);
+    pDeleteHandleButton->setToolTip(tr("Delete Handle"));
+    pDeleteHandleButton->setCheckable(true);
+    QObject::connect(pDeleteHandleButton, &QToolButton::clicked, this, &MainWindow::onDeleteButtonCheckedStatusChanged);
+
+    // Spit
+    QToolButton* pSpitHandleButton = new QToolButton;
+    m_pToolBar->addWidget(pSpitHandleButton);
+    pSpitHandleButton->setToolTip(tr("Spit Handle"));
+    pSpitHandleButton->setCheckable(true);
+    QObject::connect(pSpitHandleButton, &QToolButton::clicked, this, &MainWindow::onSpitButtonCheckedStatusChanged);
 }
 
 void MainWindow::onMoveButtonCheckedStatusChanged(void)
@@ -68,4 +81,22 @@ void MainWindow::onHandleButtonCheckedStatusChanged(void)
         return;
 
     g_FreeTypeConfig->setHandleEnabled(pButton->isChecked());
+}
+
+void MainWindow::onSpitButtonCheckedStatusChanged(void)
+{
+    QToolButton* pButton = qobject_cast<QToolButton*>(sender());
+    if (!pButton)
+        return;
+
+    g_FreeTypeConfig->setHandlePointSpitEnabled(pButton->isChecked());
+}
+
+void MainWindow::onDeleteButtonCheckedStatusChanged(void)
+{
+    QToolButton* pButton = qobject_cast<QToolButton*>(sender());
+    if (!pButton)
+        return;
+
+    g_FreeTypeConfig->setHandlePointDeleteMode(pButton->isChecked());
 }

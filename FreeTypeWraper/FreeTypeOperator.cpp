@@ -70,9 +70,19 @@ void FreeTypeDefOper::disposePressEvent(QMouseEvent* event)
     bool result = FreeTypePointHandleOperator::needDisposeThisOper(m_pRenderWidget, event, pGlyphItem, nIndex, nPointType);
     if (result && g_FreeTypeConfig->isHandleEnabled())
     {
-        if (g_FreeTypeConfig->isHandlePointDeleteMode())
+        if (g_FreeTypeConfig->isHandlePointDeleteMode() && nPointType == 0)
         {
-
+            FreeTypePointHandleDeleteOperator* pDeletePointHandleOperator = new FreeTypePointHandleDeleteOperator(m_pRenderWidget);
+            m_pRenderWidget->setOperator(pDeletePointHandleOperator);
+            pDeletePointHandleOperator->initCurrentInfo(nIndex, pGlyphItem);
+            pDeletePointHandleOperator->disposePressEvent(event);
+        }
+        else if (g_FreeTypeConfig->isHandlePointSpitEnabled() && nPointType == 0)
+        {
+            FreeTypePointHandleSpitOperator* pSpitPointHandleOperator = new FreeTypePointHandleSpitOperator(m_pRenderWidget);
+            m_pRenderWidget->setOperator(pSpitPointHandleOperator);
+            pSpitPointHandleOperator->initCurrentInfo(nIndex, pGlyphItem);
+            pSpitPointHandleOperator->disposePressEvent(event);
         }
         else
         {
@@ -696,7 +706,7 @@ void FreeTypePointHandleOperator::disposePressEvent(QMouseEvent* event)
     if (m_pGlyphItem == nullptr || m_nCurrentSelectedIndex < 0)
         return;
 
-    if (m_operatorPointType == 0)
+    if (m_operatorPointType == 0 || m_operatorPointType == 2)
         m_pGlyphItem->setCurrentHandleIndex(m_nCurrentSelectedIndex);
 }
 
@@ -745,7 +755,8 @@ bool FreeTypePointHandleOperator::needDisposeThisOper(FreeTypeRenderWidget* pRen
         QPointF itemPos = pGlyphItem->mapFromScene(scenePos);
         for (int i=0; i<pointInfos.size(); ++i)
         {
-            if (pointInfos[i].pointType == 0 && g_FreeTypeTool->getDistance(pointInfos[i].pos, itemPos) < r)
+            if ((pointInfos[i].pointType == 0 || pointInfos[i].pointType == 2) && \
+                g_FreeTypeTool->getDistance(pointInfos[i].pos, itemPos) < r)
             {
                 pItem = pGlyphItem;
                 index = i;
@@ -817,4 +828,43 @@ void FreeTypePointHandleDeleteOperator::disposeReleaseEvent(QMouseEvent* event)
 {
     FreeTypeDefOper* pDefOper = new FreeTypeDefOper(m_pRenderWidget);
     m_pRenderWidget->setOperator(pDefOper);
+}
+
+// ---------------------------------------------------------------------
+// Point Spit Operator
+FreeTypePointHandleSpitOperator::FreeTypePointHandleSpitOperator(FreeTypeRenderWidget* pRenderWidget)
+    :FreeTypeOperatorBase(pRenderWidget)
+{
+
+}
+
+FreeTypePointHandleSpitOperator::~FreeTypePointHandleSpitOperator()
+{
+
+}
+
+void FreeTypePointHandleSpitOperator::disposePressEvent(QMouseEvent* event)
+{
+    if (m_pGlyphItem == nullptr || m_nCurrentSelectedIndex < 0)
+        return;
+
+    m_pGlyphItem->setCurrentHandleIndex(m_nCurrentSelectedIndex);
+    m_pGlyphItem->addCopyPoint(m_nCurrentSelectedIndex);
+}
+
+void FreeTypePointHandleSpitOperator::disposeMoveEvent(QMouseEvent* event)
+{
+
+}
+
+void FreeTypePointHandleSpitOperator::disposeReleaseEvent(QMouseEvent* event)
+{
+    FreeTypeDefOper* pDefOper = new FreeTypeDefOper(m_pRenderWidget);
+    m_pRenderWidget->setOperator(pDefOper);
+}
+
+void FreeTypePointHandleSpitOperator::initCurrentInfo(int index, FreeTypeGlyphItem* pItem)
+{
+    m_nCurrentSelectedIndex = index;
+    m_pGlyphItem = pItem;
 }
