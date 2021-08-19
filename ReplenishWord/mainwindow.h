@@ -29,6 +29,8 @@ private slots:
     void onSpitButtonCheckedStatusChanged(void);
     void onAdsorbButtonChecledStatusChanged(void);
 
+    void onEraserButtonClicked(void);
+
 private:
     QToolButton* m_pSelectedButton = nullptr;
     QToolButton* m_pHandleButton = nullptr;

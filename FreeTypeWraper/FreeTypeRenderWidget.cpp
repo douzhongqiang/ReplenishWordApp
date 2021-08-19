@@ -218,3 +218,10 @@ QCursor FreeTypeRenderWidget::getPenHandleCursor(void)
 {
     return m_penHandleCursor;
 }
+
+void FreeTypeRenderWidget::clearSelectedItem(void)
+{
+    auto items = m_pScene->selectedItems();
+    for (auto iter = items.begin(); iter != items.end(); ++iter)
+        delete *iter;
+}

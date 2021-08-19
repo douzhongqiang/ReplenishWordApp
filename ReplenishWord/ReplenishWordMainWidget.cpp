@@ -61,3 +61,8 @@ void ReplenishWordMainWidget::setCurrentOperatorMode(FreeTypeRenderWidget::Opera
 {
     m_pReplenishWidget->setCurrentOperatorTool(type);
 }
+
+void ReplenishWordMainWidget::clearSelectedItem(void)
+{
+    m_pReplenishWidget->clearSelectedItem();
+}

@@ -51,6 +51,9 @@ public:
     void setPenHandleCursor(const QCursor& cursor);
     QCursor getPenHandleCursor(void);
 
+    // Clear Select Item
+    void clearSelectedItem(void);
+
 private:
     QSharedPointer<FreeTypeCore> m_pFreeTypeCore;
     QGraphicsScene* m_pScene = nullptr;

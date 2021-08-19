@@ -92,6 +92,24 @@ void MainWindow::initToolBar(void)
     m_pHandleAdsorbButton->setIconSize(QSize(30, 30));
     QObject::connect(m_pHandleAdsorbButton, &QToolButton::clicked, this, &MainWindow::onAdsorbButtonChecledStatusChanged);
 
+    // Add Split Widget
+    QWidget* pSplitWidget2 = new QWidget;
+    pSplitWidget2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    pSplitWidget2->setFixedSize(2, 36);
+    g_FreeTypeTool->applyCurrentStyle(pSplitWidget2, "SplitStyle");
+    pLayout->addSpacing(2);
+    pLayout->addWidget(pSplitWidget);
+    pLayout->addSpacing(2);
+
+    // Adsorb
+    QToolButton* pEraserButton = new QToolButton;
+    pLayout->addWidget(pEraserButton);
+    pEraserButton->setToolTip(tr("Adsorb Handle"));
+    pEraserButton->setFixedSize(32, 32);
+    pEraserButton->setIcon(QIcon(":/images/EraserTool.png"));
+    pEraserButton->setIconSize(QSize(30, 30));
+    QObject::connect(pEraserButton, &QToolButton::clicked, this, &MainWindow::onEraserButtonClicked);
+
     pLayout->addStretch();
 }
 
@@ -194,4 +212,9 @@ void MainWindow::onHandlePointAdsorbEnabledChanged(bool isEnabled)
         m_pHandleDeleteButton->setChecked(false);
         m_pHandleSplitButton->setChecked(false);
     }
+}
+
+void MainWindow::onEraserButtonClicked(void)
+{
+    m_pMainWidget->clearSelectedItem();
 }

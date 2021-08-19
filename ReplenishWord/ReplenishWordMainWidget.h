@@ -17,6 +17,8 @@ public:
 
     void setCurrentOperatorMode(FreeTypeRenderWidget::OperatorType type);
 
+    void clearSelectedItem(void);
+
 private:
     FreeTypeRenderWidget* m_pReplenishWidget = nullptr;
     QLineEdit* m_pInputLineEdit = nullptr;
