@@ -61,3 +61,18 @@ bool FreeTypeConfig::isHandlePointSpitEnabled(void)
 {
     return m_isHandleSpitPointEnabled;
 }
+
+// set/get handle Adsorb Point Enabled
+void FreeTypeConfig::setHandlePointAdsorbEnabled(bool isEnabeld)
+{
+    if (m_isHandleAdsorbPointEnabled != isEnabeld)
+    {
+        m_isHandleAdsorbPointEnabled = isEnabeld;
+        emit handlePointAdsorbEnabledChanged(m_isHandleAdsorbPointEnabled);
+    }
+}
+
+bool FreeTypeConfig::isHandlePointAdsorbEnabled(void)
+{
+    return m_isHandleAdsorbPointEnabled;
+}

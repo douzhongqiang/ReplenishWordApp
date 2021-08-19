@@ -74,6 +74,7 @@ signals:
 
 private slots:
     void onHandleEnabledChanged(bool isEnabled);
+    void oHandlePointSpitEnabledChanged(bool isEnabled);
 };
 
 #endif

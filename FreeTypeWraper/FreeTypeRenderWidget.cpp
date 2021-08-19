@@ -206,3 +206,15 @@ FreeTypeSelectedItem* FreeTypeRenderWidget::getScaledItemHandleItem(void)
 {
     return m_pSelectItem;
 }
+
+
+// Cursor About
+void FreeTypeRenderWidget::setPenHandleCursor(const QCursor& cursor)
+{
+    m_penHandleCursor = cursor;
+}
+
+QCursor FreeTypeRenderWidget::getPenHandleCursor(void)
+{
+    return m_penHandleCursor;
+}

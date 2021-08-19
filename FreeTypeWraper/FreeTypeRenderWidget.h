@@ -47,6 +47,10 @@ public:
     // Get Selected Item Handle Rect
     FreeTypeSelectedItem* getScaledItemHandleItem(void);
 
+    // Cursor About
+    void setPenHandleCursor(const QCursor& cursor);
+    QCursor getPenHandleCursor(void);
+
 private:
     QSharedPointer<FreeTypeCore> m_pFreeTypeCore;
     QGraphicsScene* m_pScene = nullptr;
@@ -74,7 +78,10 @@ private:
 
     OperatorType m_currentOperatorType;
 
-private slots:
+    // Cursor About
+    QCursor m_penHandleCursor;
+
+public slots:
     void onItemSelectionChanged(void);
 };
 

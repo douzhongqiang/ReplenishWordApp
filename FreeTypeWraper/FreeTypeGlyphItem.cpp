@@ -1,5 +1,6 @@
 #include "FreeTypeGlyphItem.h"
 #include "FreeTypeConfig.h"
+#include "FreeTypeRenderWidget.h"
 #include <QGraphicsScene>
 #include <QDebug>
 
@@ -13,6 +14,8 @@ FreeTypeGlyphItem::FreeTypeGlyphItem(QGraphicsItem* parentItem)
 
     QObject::connect(g_FreeTypeConfig, &FreeTypeConfig::handleEnabledChanged, \
                      this, &FreeTypeGlyphItem::onHandleEnabledChanged);
+    QObject::connect(g_FreeTypeConfig, &FreeTypeConfig::handlePointSpitEnabledChanged, \
+                     this, &FreeTypeGlyphItem::oHandlePointSpitEnabledChanged);
 }
 
 FreeTypeGlyphItem::~FreeTypeGlyphItem()
@@ -75,7 +78,11 @@ QPainterPath FreeTypeGlyphItem::shape() const
 QVariant FreeTypeGlyphItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
     if (change == QGraphicsItem::ItemSelectedChange)
+    {
+        m_SelectedIndex = -1;
         prepareGeometryChange();
+        this->update();
+    }
     else if (change == QGraphicsItem::ItemPositionHasChanged)
     {
         emit signalItemPosChanged();
@@ -119,18 +126,18 @@ void FreeTypeGlyphItem::syncToPath(void)
             nLastDrawedIndex = i;
         }
 
-        if (i == m_pointInfos.size() - 1)
-        {
-            if (m_pointInfos[i].pointType == 0)
-                m_path.lineTo(m_pointInfos[0].pos);
-            else if (m_pointInfos[i].pointType == 1)
-            {
-                if (i - 1 == nLastDrawedIndex)
-                    m_path.quadTo(m_pointInfos[i].pos, m_pointInfos[0].pos);
-                else if (i - 2 == nLastDrawedIndex)
-                    m_path.cubicTo(m_pointInfos[i - 1].pos, m_pointInfos[i].pos, m_pointInfos[0].pos);
-            }
-        }
+//        if (i == m_pointInfos.size() - 1)
+//        {
+//            if (m_pointInfos[i].pointType == 0)
+//                m_path.lineTo(m_pointInfos[0].pos);
+//            else if (m_pointInfos[i].pointType == 1)
+//            {
+//                if (i - 1 == nLastDrawedIndex)
+//                    m_path.quadTo(m_pointInfos[i].pos, m_pointInfos[0].pos);
+//                else if (i - 2 == nLastDrawedIndex)
+//                    m_path.cubicTo(m_pointInfos[i - 1].pos, m_pointInfos[i].pos, m_pointInfos[0].pos);
+//            }
+//        }
     }
 }
 
@@ -257,6 +264,7 @@ void FreeTypeGlyphItem::addCopyPoint(int index)
     if (m_pointInfos[index].pointType != 0)
         return;
 
+    m_pointInfos[index].isSpitedPoint = true;
     FreeTypeCore::PointInfo pointInfo = m_pointInfos[index];
     pointInfo.pointType = 2;
     m_pointInfos.insert(index + 1, pointInfo);
@@ -264,6 +272,7 @@ void FreeTypeGlyphItem::addCopyPoint(int index)
     processSpitItem();
 
     syncToPath();
+    m_SelectedIndex = -1;
 
     this->update();
 }
@@ -310,6 +319,14 @@ void FreeTypeGlyphItem::processSpitItem(void)
         FreeTypeGlyphItem* pSubItem = new FreeTypeGlyphItem;
         pSubItem->setPos(this->pos());
         pSubItem->setCurrentPointInfo(tempPoints2);
+
+        // Connect
+        FreeTypeRenderWidget* pRenderWidget = qobject_cast<FreeTypeRenderWidget*>(this->scene()->views()[0]);
+        if (pRenderWidget)
+        {
+            QObject::connect(pSubItem, &FreeTypeGlyphItem::signalItemPosChanged, \
+                             pRenderWidget, &FreeTypeRenderWidget::onItemSelectionChanged);
+        }
         this->scene()->addItem(pSubItem);
     }
 
@@ -376,7 +393,23 @@ void FreeTypeGlyphItem::drawControlPoints(QPainter* painter)
     for (auto iter = m_pointInfos.begin(); iter != m_pointInfos.end(); ++iter)
     {
         if (iter->pointType == 0 || iter->pointType == 2)
+        {
+            // For Spit Point HightLight Spit Point
+            bool needResetColor = g_FreeTypeConfig->isHandlePointSpitEnabled() && iter->isSpitedPoint;
+
+            if (needResetColor)
+            {
+                QPen tempPen = pen;
+                tempPen.setColor(QColor(128, 0, 64));
+                painter->save();
+                painter->setPen(tempPen);
+            }
+
+            // Draw Handle Point
             painter->drawPoint(iter->pos);
+            if (needResetColor)
+                painter->restore();
+        }
     }
 
     // Draw Control
@@ -436,6 +469,12 @@ void FreeTypeGlyphItem::drawControlHandlePoints(QPainter* painter)
 }
 
 void FreeTypeGlyphItem::onHandleEnabledChanged(bool isEnabled)
+{
+    if (this->isSelected())
+        this->update();
+}
+
+void FreeTypeGlyphItem::oHandlePointSpitEnabledChanged(bool isEnabled)
 {
     if (this->isSelected())
         this->update();

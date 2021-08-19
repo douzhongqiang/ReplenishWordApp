@@ -1,5 +1,15 @@
 <RCC>
     <qresource prefix="/">
         <file>qss/ReplenishWord.qss</file>
+        <file>images/SelectTool.png</file>
+        <file>images/Pen_Add.png</file>
+        <file>images/Pen_Remove.png</file>
+        <file>images/PenTool.png</file>
+        <file>images/Pen_adsorb.png</file>
+        <file>images/EraserTool.png</file>
+        <file>images/Pen_Add2.png</file>
+        <file>images/Pen_adsorb_Select.png</file>
+        <file>images/Pen_Remove2.png</file>
+        <file>images/SelectTool2.png</file>
     </qresource>
 </RCC>

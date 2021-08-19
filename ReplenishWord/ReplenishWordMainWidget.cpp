@@ -18,6 +18,7 @@ void ReplenishWordMainWidget::initUI(void)
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
     m_pReplenishWidget = new FreeTypeRenderWidget;
+    m_pReplenishWidget->setPenHandleCursor(QCursor(QPixmap(":/images/SelectTool2.png").scaled(26, 26, Qt::IgnoreAspectRatio, Qt::SmoothTransformation), 2, 2));
     m_pReplenishWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     mainLayout->addWidget(m_pReplenishWidget);
 

@@ -19,6 +19,8 @@ public:
         QPointF pos;
         int pointType = 0;      // 0 : Normal. 1: Control, 2: moveToPoint
         int srcTagType = 0;
+
+        bool isSpitedPoint = false;
     };
 
     typedef QVector<PointInfo> PointInfos;

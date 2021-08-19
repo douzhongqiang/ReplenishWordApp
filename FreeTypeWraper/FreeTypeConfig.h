@@ -25,6 +25,10 @@ public:
     void setHandlePointSpitEnabled(bool isEnabled);
     bool isHandlePointSpitEnabled(void);
 
+    // set/get handle Adsorb Point Enabled
+    void setHandlePointAdsorbEnabled(bool isEnabeld);
+    bool isHandlePointAdsorbEnabled(void);
+
 private:
     FreeTypeConfig(QObject* parent = nullptr);
     ~FreeTypeConfig();
@@ -32,11 +36,13 @@ private:
     bool m_isHandleEnabled = false;
     bool m_isHandlePointDeleteMode = false;
     bool m_isHandleSpitPointEnabled = false;
+    bool m_isHandleAdsorbPointEnabled = false;
 
 signals:
     void handleEnabledChanged(bool isEnabled);
     void handlePointDeleteModeChanged(bool isEnabled);
     void handlePointSpitEnabledChanged(bool isEnabled);
+    void handlePointAdsorbEnabledChanged(bool isEnabled);
 };
 
 #endif
