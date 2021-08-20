@@ -19,7 +19,9 @@ public:
 
         t_BottomLeftHandle,
         t_BottomMiddleHandle,
-        t_BottomRightHandle
+        t_BottomRightHandle,
+
+        t_RotateHandle
     };
 
 public:
@@ -32,6 +34,14 @@ public:
 
     // Get Handle Rects
     void getHandleRects(QVector<QRectF>& rects);
+    void getHandleRects2(QVector<QRectF>& rects);
+
+    // Get Rotate Rect
+    void getRotateRect(QPointF& centerPos, qreal& r);
+
+    // set/get rotate
+    void setRotate(qreal rotate);
+    qreal getRotate(void);
 
 protected:
     QRectF boundingRect() const override;
@@ -40,8 +50,12 @@ protected:
 
 private:
     QRectF m_rect;
+    QRectF m_rect2;
+
     int m_nInterval = 12;
     int m_nInterval2 = 20;
+
+    qreal m_rotateValue = 0;
 };
 
 #endif

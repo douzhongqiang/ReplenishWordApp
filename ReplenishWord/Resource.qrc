@@ -11,5 +11,6 @@
         <file>images/Pen_adsorb_Select.png</file>
         <file>images/Pen_Remove2.png</file>
         <file>images/SelectTool2.png</file>
+        <file>images/RotateTool.png</file>
     </qresource>
 </RCC>

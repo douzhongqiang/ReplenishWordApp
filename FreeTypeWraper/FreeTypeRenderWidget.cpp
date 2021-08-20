@@ -219,6 +219,16 @@ QCursor FreeTypeRenderWidget::getPenHandleCursor(void)
     return m_penHandleCursor;
 }
 
+void FreeTypeRenderWidget::setRotateHandleCursor(const QCursor& cursor)
+{
+    m_rotateHandleCursor = cursor;
+}
+
+QCursor FreeTypeRenderWidget::getRotateHandleCursor(void)
+{
+    return m_rotateHandleCursor;
+}
+
 void FreeTypeRenderWidget::clearSelectedItem(void)
 {
     auto items = m_pScene->selectedItems();

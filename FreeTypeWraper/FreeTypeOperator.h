@@ -155,6 +155,19 @@ private:
 };
 
 // ---------------------------------------------------------------------
+// Rotate Handle Operator
+class FreeTypeRotateHandleOperator : public FreeTypeOperatorBase
+{
+public:
+    FreeTypeRotateHandleOperator(FreeTypeRenderWidget* pRenderWidget);
+    ~FreeTypeRotateHandleOperator();
+
+    void disposePressEvent(QMouseEvent* event) override;
+    void disposeMoveEvent(QMouseEvent* event) override;
+    void disposeReleaseEvent(QMouseEvent* event) override;
+};
+
+// ---------------------------------------------------------------------
 // Point Select Operator
 class FreeTypePointHandleOperator : public FreeTypeOperatorBase
 {

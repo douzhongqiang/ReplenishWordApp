@@ -99,13 +99,24 @@ void FreeTypeDefOper::disposePressEvent(QMouseEvent* event)
     result = FreeTypeHandleOperator::needDisposeThisOper(m_pRenderWidget, event, type);
     if (result)
     {
-        // Set FreeTypeMoveSelectedOper
-        FreeTypeHandleOperator* pHandleOperator = new FreeTypeHandleOperator(m_pRenderWidget);
-        m_pRenderWidget->setOperator(pHandleOperator);
-        pHandleOperator->setCurrentHandleType((FreeTypeSelectedItem::HandleType)type);
-        pHandleOperator->setShiftPressed(hasEnteredShiftKey);
-        pHandleOperator->disposePressEvent(event);
-        return;
+        if (type != FreeTypeSelectedItem::t_RotateHandle)
+        {
+            // Set FreeTypeMoveSelectedOper
+            FreeTypeHandleOperator* pHandleOperator = new FreeTypeHandleOperator(m_pRenderWidget);
+            m_pRenderWidget->setOperator(pHandleOperator);
+            pHandleOperator->setCurrentHandleType((FreeTypeSelectedItem::HandleType)type);
+            pHandleOperator->setShiftPressed(hasEnteredShiftKey);
+            pHandleOperator->disposePressEvent(event);
+            return;
+        }
+        else
+        {
+            // Set FreeTypeRotateSelectedOper
+            FreeTypeRotateHandleOperator* pRotateHandleOperator = new FreeTypeRotateHandleOperator(m_pRenderWidget);
+            m_pRenderWidget->setOperator(pRotateHandleOperator);
+            pRotateHandleOperator->disposePressEvent(event);
+            return;
+        }
     }
 
     // Selected
@@ -472,6 +483,7 @@ bool FreeTypeHandleOperator::needDisposeThisOper(FreeTypeRenderWidget* pRenderWi
     QVector<QRectF> handleRects;
     pSelectItem->getHandleRects(handleRects);
 
+    // Adjust Item is Rect Handle
     for (int i=0; i<handleRects.size(); ++i)
     {
         if (handleRects[i].contains(scenePos))
@@ -479,6 +491,16 @@ bool FreeTypeHandleOperator::needDisposeThisOper(FreeTypeRenderWidget* pRenderWi
             type = i;
             return true;
         }
+    }
+
+    // Adjust Item is Rotate Handle
+    QPointF rotateCenterPos;
+    qreal r;
+    pSelectItem->getRotateRect(rotateCenterPos, r);
+    if (g_FreeTypeTool->getDistance(rotateCenterPos, scenePos) <= r)
+    {
+        type = (int)FreeTypeSelectedItem::t_RotateHandle;
+        return true;
     }
 
     return false;
@@ -681,11 +703,45 @@ void FreeTypeHandleOperator::processMouseCursor(FreeTypeRenderWidget* pRenderWid
         pRenderWidget->viewport()->setCursor(Qt::SizeHorCursor);
         return;
 
+    case FreeTypeSelectedItem::t_RotateHandle:
+        pRenderWidget->viewport()->setCursor(pRenderWidget->getRotateHandleCursor());
+        return;
+
     default:
         break;
     }
 
     return pRenderWidget->viewport()->setCursor(Qt::ArrowCursor);
+}
+
+// ---------------------------------------------------------------------
+// Rotate Handle Operator
+FreeTypeRotateHandleOperator::FreeTypeRotateHandleOperator(FreeTypeRenderWidget* pRenderWidget)
+    :FreeTypeOperatorBase(pRenderWidget)
+{
+
+}
+
+FreeTypeRotateHandleOperator::~FreeTypeRotateHandleOperator()
+{
+
+}
+
+void FreeTypeRotateHandleOperator::disposePressEvent(QMouseEvent* event)
+{
+    m_pRenderWidget->viewport()->setCursor(m_pRenderWidget->getRotateHandleCursor());
+}
+
+void FreeTypeRotateHandleOperator::disposeMoveEvent(QMouseEvent* event)
+{
+
+}
+
+void FreeTypeRotateHandleOperator::disposeReleaseEvent(QMouseEvent* event)
+{
+    m_pRenderWidget->viewport()->setCursor(Qt::ArrowCursor);
+    FreeTypeDefOper* pDefOper = new FreeTypeDefOper(m_pRenderWidget);
+    m_pRenderWidget->setOperator(pDefOper);
 }
 
 // ---------------------------------------------------------------------

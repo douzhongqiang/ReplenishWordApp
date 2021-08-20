@@ -50,6 +50,8 @@ public:
     // Cursor About
     void setPenHandleCursor(const QCursor& cursor);
     QCursor getPenHandleCursor(void);
+    void setRotateHandleCursor(const QCursor& cursor);
+    QCursor getRotateHandleCursor(void);
 
     // Clear Select Item
     void clearSelectedItem(void);
@@ -83,6 +85,7 @@ private:
 
     // Cursor About
     QCursor m_penHandleCursor;
+    QCursor m_rotateHandleCursor;
 
 public slots:
     void onItemSelectionChanged(void);
