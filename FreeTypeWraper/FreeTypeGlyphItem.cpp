@@ -382,8 +382,8 @@ void FreeTypeGlyphItem::processSpitItem(void)
     {
         tempPoints2[0].pointType = 0;
         FreeTypeGlyphItem* pSubItem = new FreeTypeGlyphItem;
-        pSubItem->setPos(this->pos());
         pSubItem->setCurrentPointInfo(tempPoints2);
+        pSubItem->setIntervalPos(this->pos().x(), this->pos().y());
 
         // Connect
         FreeTypeRenderWidget* pRenderWidget = qobject_cast<FreeTypeRenderWidget*>(this->scene()->views()[0]);
