@@ -36,12 +36,16 @@ public:
     // Add Copy Point
     void addCopyPoint(int index);
 
+    void setIntervalPos(qreal xPt, qreal yPt);
+
 public:
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) final;
     QPainterPath shape() const override;
 
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) override;
+
+    QRectF itemBoundingRect(void);
 
 private:
     FreeTypeCore::PointInfos m_srcPointInfos;
@@ -68,6 +72,9 @@ private:
 
     // When can Spit To Two Item, This Spit
     void processSpitItem(void);
+
+    // Convert To Normalize Points
+    void converToNormalizePoint(const FreeTypeCore::PointInfos& pointInfo, FreeTypeCore::PointInfos& newPointInfo);
 
 signals:
     void signalItemPosChanged(void);

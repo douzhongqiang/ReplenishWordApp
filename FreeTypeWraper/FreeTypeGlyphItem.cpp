@@ -25,7 +25,8 @@ FreeTypeGlyphItem::~FreeTypeGlyphItem()
 
 void FreeTypeGlyphItem::setCurrentPointInfo(const FreeTypeCore::PointInfos& pointInfo)
 {
-    m_pointInfos = pointInfo;
+    converToNormalizePoint(pointInfo, m_pointInfos);
+//    m_pointInfos = pointInfo;
     m_srcPointInfos = m_pointInfos;
 
     syncToPath();
@@ -41,6 +42,29 @@ void FreeTypeGlyphItem::getCurrentPointInfo(FreeTypeCore::PointInfos& pointInfos
 QRectF FreeTypeGlyphItem::boundingRect() const
 {
     return m_path.boundingRect();
+}
+
+QRectF FreeTypeGlyphItem::itemBoundingRect(void)
+{
+    QRectF rectf = m_path.boundingRect();
+
+    QTransform transform;
+    transform.rotate(this->rotation());
+
+    QPointF topLeftPoint = rectf.topLeft() * transform;
+    QPointF topRightPoint = rectf.topRight() * transform;
+    QPointF bottomLeftPoint = rectf.bottomLeft() * transform;
+    QPointF bottomRightPoint = rectf.bottomRight() * transform;
+
+    qreal xMin, xMax;
+    qreal yMin, yMax;
+
+    xMin = qMin(qMin(qMin(topLeftPoint.x(), topRightPoint.x()), bottomLeftPoint.x()), bottomRightPoint.x());
+    xMax = qMax(qMax(qMax(topLeftPoint.x(), topRightPoint.x()), bottomLeftPoint.x()), bottomRightPoint.x());
+    yMin = qMin(qMin(qMin(topLeftPoint.y(), topRightPoint.y()), bottomLeftPoint.y()), bottomRightPoint.y());
+    yMax = qMax(qMax(qMax(topLeftPoint.y(), topRightPoint.y()), bottomLeftPoint.y()), bottomRightPoint.y());
+
+    return QRectF(QPointF(xMin, yMin), QPointF(xMax, yMax));
 }
 
 void FreeTypeGlyphItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
@@ -65,6 +89,15 @@ void FreeTypeGlyphItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
         else
             drawControlPoints(painter);                     // Draw Control Point
     }
+}
+
+void FreeTypeGlyphItem::setIntervalPos(qreal xPt, qreal yPt)
+{
+    QPointF pos = this->pos();
+    pos.setX(xPt + pos.x());
+    pos.setY(yPt + pos.y());
+
+    this->setPos(pos);
 }
 
 QPainterPath FreeTypeGlyphItem::shape() const
@@ -478,4 +511,34 @@ void FreeTypeGlyphItem::oHandlePointSpitEnabledChanged(bool isEnabled)
 {
     if (this->isSelected())
         this->update();
+}
+
+void FreeTypeGlyphItem::converToNormalizePoint(const FreeTypeCore::PointInfos& pointInfo, FreeTypeCore::PointInfos& newPointInfo)
+{
+    qreal left = 100, right = -100;
+    qreal top = 100, bottom = -100;
+
+    // Get Rect
+    for (auto iter = pointInfo.begin(); iter != pointInfo.end(); ++iter)
+    {
+        left = qMin(iter->pos.x(), left);
+        right = qMax(iter->pos.x(), right);
+
+        top = qMin(iter->pos.y(), top);
+        bottom = qMax(iter->pos.y(), bottom);
+    }
+
+    QRectF rect(QPointF(left, top), QPointF(right, bottom));
+    newPointInfo.clear();
+
+    QTransform transform;
+    transform.translate(-rect.center().x(), -rect.center().y());
+    for (auto iter = pointInfo.begin(); iter != pointInfo.end(); ++iter)
+    {
+        FreeTypeCore::PointInfo pointInfo = *iter;
+        pointInfo.pos = pointInfo.pos * transform;
+        newPointInfo.push_back(pointInfo);
+    }
+
+    this->setPos(rect.center());
 }

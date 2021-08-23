@@ -5,7 +5,13 @@
 #include "FreeTypeTool.h"
 #include "FreeTypeConfig.h"
 #include <QGraphicsItem>
+#include <QtMath>
 #include <QDebug>
+#include <QVector3D>
+#include <QVector2D>
+#include <QMatrix3x3>
+
+#define PI 3.14159265358979
 
 FreeTypeOperatorBase::FreeTypeOperatorBase(FreeTypeRenderWidget* pRenderWidget)
     :m_pRenderWidget(pRenderWidget)
@@ -730,16 +736,112 @@ FreeTypeRotateHandleOperator::~FreeTypeRotateHandleOperator()
 void FreeTypeRotateHandleOperator::disposePressEvent(QMouseEvent* event)
 {
     m_pRenderWidget->viewport()->setCursor(m_pRenderWidget->getRotateHandleCursor());
+
+    m_pos = m_pRenderWidget->mapToScene(event->pos());
+    m_pSelectedItem = m_pRenderWidget->getScaledItemHandleItem();
+    if (m_pSelectedItem)
+    {
+        m_pos = m_pSelectedItem->mapFromScene(m_pos);
+        m_centerPos = m_pSelectedItem->getSelectedRect().center();
+        m_centerPos = m_pSelectedItem->pos();
+    }
+
+    m_startPosMap.clear();
+    auto items = m_pRenderWidget->scene()->selectedItems();
+    for (auto iter = items.begin(); iter != items.end(); ++iter)
+    {
+        m_startPosMap.insert(*iter, (*iter)->pos());
+        m_startRotateMap.insert(*iter, (*iter)->rotation());
+    }
 }
 
 void FreeTypeRotateHandleOperator::disposeMoveEvent(QMouseEvent* event)
 {
+    if (!m_pSelectedItem)
+        return;
 
+    QPointF tempPos = m_pRenderWidget->mapToScene(event->pos());
+    QPointF loacalPos = m_pSelectedItem->mapFromScene(tempPos);
+
+    // Get Start And End Vec
+    QVector2D startVec(m_pos.x() - 0, m_pos.y() - 0);
+    startVec.normalize();
+    QVector2D endVec(loacalPos.x() - 0, loacalPos.y() - 0);
+    endVec.normalize();
+
+    // get dot Value
+    qreal dotValue = QVector2D::dotProduct(startVec, endVec);
+    if (dotValue > 1.0)
+        dotValue = 1.0;
+    else if (dotValue < -1.0)
+        dotValue = -1.0;
+
+    dotValue = qAcos(dotValue);
+    if (isnan(dotValue))
+        dotValue = 0.0;
+
+    // get Angle
+    qreal angle = dotValue * 1.0 / (PI / 180);
+
+    // get + / -
+    QVector3D crossValue = QVector3D::crossProduct(QVector3D(startVec, 1.0),QVector3D(endVec, 1.0));
+    if (crossValue.z() < 0)
+        angle = -angle;
+    m_rotate += angle;
+
+    // Scaled To 0~360
+    if (m_rotate >= 360)
+        m_rotate -= 360;
+    else if (m_rotate < 0)
+        m_rotate += 360;
+
+    // Set Item Rotate
+    m_pSelectedItem->setRotate(m_rotate);
+
+    // Sync Rotate To Selected Items
+    syncSelectedItemInfos(m_rotate);
+}
+
+void FreeTypeRotateHandleOperator::syncSelectedItemInfos(qreal angle)
+{
+    // Set Selected Item Rotate
+    auto items = m_pRenderWidget->scene()->selectedItems();
+
+//    qreal xFactor = qCos(qDegreesToRadians(angle));
+//    qreal yFactor = qSin(qDegreesToRadians(angle));
+
+    for (auto iter = items.begin(); iter != items.end(); ++iter)
+    {
+        FreeTypeGlyphItem* pGlyphItem = dynamic_cast<FreeTypeGlyphItem*>(*iter);
+        if (!pGlyphItem)
+            continue;
+
+        QTransform transform;
+        transform.rotate(angle);
+
+        pGlyphItem->blockSignals(true);
+
+        // m_centerPos As Center, This Rotate
+        qreal interX = m_startPosMap[*iter].x() - m_centerPos.x();
+        qreal interY = m_startPosMap[*iter].y() - m_centerPos.y();
+        QPointF interPos(interX, interY);
+        interPos = interPos * transform;
+
+        // Set Pos
+        (*iter)->setPos(m_centerPos + interPos);
+
+        // Set Rotate
+        (*iter)->setRotation(m_startRotateMap[*iter] + m_rotate);
+
+        pGlyphItem->blockSignals(false);
+    }
 }
 
 void FreeTypeRotateHandleOperator::disposeReleaseEvent(QMouseEvent* event)
 {
     m_pRenderWidget->viewport()->setCursor(Qt::ArrowCursor);
+    m_pRenderWidget->onItemSelectionChanged();
+
     FreeTypeDefOper* pDefOper = new FreeTypeDefOper(m_pRenderWidget);
     m_pRenderWidget->setOperator(pDefOper);
 }

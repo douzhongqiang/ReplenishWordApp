@@ -165,6 +165,17 @@ public:
     void disposePressEvent(QMouseEvent* event) override;
     void disposeMoveEvent(QMouseEvent* event) override;
     void disposeReleaseEvent(QMouseEvent* event) override;
+
+private:
+    QPointF m_pos;
+    QPointF m_centerPos;
+    FreeTypeSelectedItem* m_pSelectedItem = nullptr;
+    qreal m_rotate = 0;
+
+    QMap<QGraphicsItem*, QPointF> m_startPosMap;
+    QMap<QGraphicsItem*, qreal>   m_startRotateMap;
+
+    void syncSelectedItemInfos(qreal angle);
 };
 
 // ---------------------------------------------------------------------

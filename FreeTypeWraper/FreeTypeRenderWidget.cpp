@@ -69,7 +69,7 @@ void FreeTypeRenderWidget::setCurrentRender(const QString& renderString)
         FreeTypeGlyphItem* pGlyphItem = new FreeTypeGlyphItem;
         pGlyphItem->setCurrentPointInfo(*iter);
         m_pScene->addItem(pGlyphItem);
-        pGlyphItem->setPos(50, 100);
+        pGlyphItem->setIntervalPos(50, 100);
 
         QObject::connect(pGlyphItem, &FreeTypeGlyphItem::signalItemPosChanged, \
                          this, &FreeTypeRenderWidget::onItemSelectionChanged);
@@ -184,15 +184,21 @@ void FreeTypeRenderWidget::onItemSelectionChanged(void)
     auto selectedItems = m_pScene->selectedItems();
     if (selectedItems.size() <= 0 || g_FreeTypeConfig->isHandleEnabled())
     {
+        m_pSelectItem->setRotate(0);
         m_pSelectItem->setVisible(false);
         return;
     }
 
+    m_pSelectItem->setRotate(0);
     QPainterPath path;
     for (auto iter = selectedItems.begin(); iter != selectedItems.end(); ++iter)
     {
-        QRectF rectF = (*iter)->boundingRect();
-        QPointF pos = (*iter)->pos();
+        FreeTypeGlyphItem* pItem = dynamic_cast<FreeTypeGlyphItem*>(*iter);
+        if (!pItem)
+            continue;
+
+        QRectF rectF = pItem->itemBoundingRect();
+        QPointF pos = pItem->pos();
 
         rectF = QRectF(rectF.x() + pos.x(), rectF.y() + pos.y(), rectF.width(), rectF.height());
         path.addRect(rectF);

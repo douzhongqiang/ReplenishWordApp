@@ -98,7 +98,7 @@ void MainWindow::initToolBar(void)
     pSplitWidget2->setFixedSize(2, 36);
     g_FreeTypeTool->applyCurrentStyle(pSplitWidget2, "SplitStyle");
     pLayout->addSpacing(2);
-    pLayout->addWidget(pSplitWidget);
+    pLayout->addWidget(pSplitWidget2);
     pLayout->addSpacing(2);
 
     // Adsorb
