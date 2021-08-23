@@ -166,6 +166,8 @@ public:
     void disposeMoveEvent(QMouseEvent* event) override;
     void disposeReleaseEvent(QMouseEvent* event) override;
 
+    void setShiftPressed(bool isPressed);
+
 private:
     QPointF m_pos;
     QPointF m_centerPos;
@@ -176,6 +178,8 @@ private:
     QMap<QGraphicsItem*, qreal>   m_startRotateMap;
 
     void syncSelectedItemInfos(qreal angle);
+
+    bool m_isShiftPressed = false;
 };
 
 // ---------------------------------------------------------------------

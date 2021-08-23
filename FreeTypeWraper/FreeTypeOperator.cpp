@@ -120,6 +120,7 @@ void FreeTypeDefOper::disposePressEvent(QMouseEvent* event)
             // Set FreeTypeRotateSelectedOper
             FreeTypeRotateHandleOperator* pRotateHandleOperator = new FreeTypeRotateHandleOperator(m_pRenderWidget);
             m_pRenderWidget->setOperator(pRotateHandleOperator);
+            pRotateHandleOperator->setShiftPressed(hasEnteredShiftKey);
             pRotateHandleOperator->disposePressEvent(event);
             return;
         }
@@ -733,6 +734,11 @@ FreeTypeRotateHandleOperator::~FreeTypeRotateHandleOperator()
 
 }
 
+void FreeTypeRotateHandleOperator::setShiftPressed(bool isPressed)
+{
+    m_isShiftPressed = isPressed;
+}
+
 void FreeTypeRotateHandleOperator::disposePressEvent(QMouseEvent* event)
 {
     m_pRenderWidget->viewport()->setCursor(m_pRenderWidget->getRotateHandleCursor());
@@ -799,6 +805,9 @@ void FreeTypeRotateHandleOperator::disposeMoveEvent(QMouseEvent* event)
         m_rotate -= 360;
     else if (m_rotate < 0)
         m_rotate += 360;
+
+    if (m_isShiftPressed)
+        m_rotate = ((int)m_rotate) / 15 * 15;
 
     // Set Item Rotate
     m_pSelectedItem->setRotate(m_rotate);
