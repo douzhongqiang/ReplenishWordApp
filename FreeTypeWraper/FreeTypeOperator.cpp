@@ -742,16 +742,21 @@ void FreeTypeRotateHandleOperator::disposePressEvent(QMouseEvent* event)
     if (m_pSelectedItem)
     {
         m_pos = m_pSelectedItem->mapFromScene(m_pos);
-        m_centerPos = m_pSelectedItem->getSelectedRect().center();
         m_centerPos = m_pSelectedItem->pos();
     }
 
+    // Set Map Infos
     m_startPosMap.clear();
+    m_startRotateMap.clear();
     auto items = m_pRenderWidget->scene()->selectedItems();
     for (auto iter = items.begin(); iter != items.end(); ++iter)
     {
-        m_startPosMap.insert(*iter, (*iter)->pos());
-        m_startRotateMap.insert(*iter, (*iter)->rotation());
+        FreeTypeGlyphItem* pItem = dynamic_cast<FreeTypeGlyphItem*>(*iter);
+        if (!pItem)
+            continue;
+
+        m_startPosMap.insert(*iter, pItem->pos());
+        m_startRotateMap.insert(*iter, pItem->getRotate());
     }
 }
 
@@ -828,10 +833,10 @@ void FreeTypeRotateHandleOperator::syncSelectedItemInfos(qreal angle)
         interPos = interPos * transform;
 
         // Set Pos
-        (*iter)->setPos(m_centerPos + interPos);
+        pGlyphItem->setPos(m_centerPos + interPos);
 
         // Set Rotate
-        (*iter)->setRotation(m_startRotateMap[*iter] + m_rotate);
+        pGlyphItem->setRotate(m_startRotateMap[*iter] + m_rotate);
 
         pGlyphItem->blockSignals(false);
     }

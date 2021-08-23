@@ -46,6 +46,8 @@ QRectF FreeTypeGlyphItem::boundingRect() const
 
 QRectF FreeTypeGlyphItem::itemBoundingRect(void)
 {
+    return boundingRect();
+
     QRectF rectf = m_path.boundingRect();
 
     QTransform transform;
@@ -85,7 +87,7 @@ void FreeTypeGlyphItem::paint(QPainter *painter, const QStyleOptionGraphicsItem 
     if (this->isSelected())
     {
         if (!g_FreeTypeConfig->isHandleEnabled())
-            painter->drawRect(m_path.boundingRect());       // Draw Selected Rect
+            ;//painter->drawRect(m_path.boundingRect());       // Draw Selected Rect
         else
             drawControlPoints(painter);                     // Draw Control Point
     }
@@ -98,6 +100,34 @@ void FreeTypeGlyphItem::setIntervalPos(qreal xPt, qreal yPt)
     pos.setY(yPt + pos.y());
 
     this->setPos(pos);
+}
+
+// Set/Get Rotate
+void FreeTypeGlyphItem::setRotate(qreal rotate)
+{
+    QTransform transform, transform2;
+    transform.rotate(-m_rotate);
+    transform2.rotate(rotate);
+
+    FreeTypeCore::PointInfos tempPointInfos = m_pointInfos;
+    m_pointInfos.clear();
+
+    for (auto iter = tempPointInfos.begin(); iter != tempPointInfos.end(); ++iter)
+    {
+        auto pointInfo = *iter;
+        pointInfo.pos = pointInfo.pos * transform * transform2;
+
+        m_pointInfos.push_back(pointInfo);
+    }
+
+    m_rotate = rotate;
+    this->syncToPath();
+    this->update();
+}
+
+qreal FreeTypeGlyphItem::getRotate(void)
+{
+    return m_rotate;
 }
 
 QPainterPath FreeTypeGlyphItem::shape() const
@@ -176,19 +206,21 @@ void FreeTypeGlyphItem::syncToPath(void)
 
 void FreeTypeGlyphItem::setScaleValue(qreal xValue, qreal yValue)
 {
-    m_xScaleValue = xValue;
-    m_yScaleValue = yValue;
-
+    FreeTypeCore::PointInfos tempPointInfos = m_pointInfos;
     m_pointInfos.clear();
-    for (auto iter = m_srcPointInfos.begin(); iter != m_srcPointInfos.end(); ++iter)
+
+    for (auto iter = tempPointInfos.begin(); iter != tempPointInfos.end(); ++iter)
     {
-        qreal xPt = iter->pos.x() * m_xScaleValue;
-        qreal yPt = iter->pos.y() * m_yScaleValue;
+        qreal xPt = iter->pos.x() / m_xScaleValue * xValue;
+        qreal yPt = iter->pos.y() / m_yScaleValue * yValue;
 
         auto pointInfo = *iter;
         pointInfo.pos = QPointF(xPt, yPt);
         m_pointInfos << pointInfo;
     }
+
+    m_xScaleValue = xValue;
+    m_yScaleValue = yValue;
 
     // Set Scaled Pos
 //    QPointF destPos;

@@ -38,6 +38,10 @@ public:
 
     void setIntervalPos(qreal xPt, qreal yPt);
 
+    // Set/Get Rotate
+    void setRotate(qreal rotate);
+    qreal getRotate(void);
+
 public:
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) final;
@@ -75,6 +79,8 @@ private:
 
     // Convert To Normalize Points
     void converToNormalizePoint(const FreeTypeCore::PointInfos& pointInfo, FreeTypeCore::PointInfos& newPointInfo);
+
+    qreal m_rotate = 0;
 
 signals:
     void signalItemPosChanged(void);
