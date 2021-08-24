@@ -584,8 +584,15 @@ void FreeTypeHandleOperator::disposeMoveEvent(QMouseEvent* event)
 
         m_scenePos = scenePos;
 
-        scaleTranslateGlyphItems(nRect.width() * 1.0 / m_nSelectRectWidth, \
-                                 nRect.height() * 1.0 / m_nSelectRectHeight);
+        qreal xScaleFactor = nRect.width() * 1.0 / m_nSelectRectWidth;
+        qreal yScaleFactor = nRect.height() * 1.0 / m_nSelectRectHeight;
+        if (m_isShiftPressed)
+        {
+            qreal value = qMin(xScaleFactor, yScaleFactor);
+            xScaleFactor = value;
+            yScaleFactor = value;
+        }
+        scaleTranslateGlyphItems(xScaleFactor, yScaleFactor);
 
 //        m_nSelectRectWidth = nRect.width();
 //        m_nSelectRectHeight = nRect.height();
