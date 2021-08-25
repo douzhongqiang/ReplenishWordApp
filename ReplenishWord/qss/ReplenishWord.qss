@@ -1,0 +1,22 @@
+QToolButton{
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgb(200, 200, 200);
+    border-radius: 4px;
+}
+
+QToolButton:hover{
+    background-color: rgb(235, 235, 235);
+}
+
+QToolButton:checked{
+    background-color: rgb(220, 220, 220);
+}
+
+QToolButton:!enabled{
+    background-color: rgb(120, 120, 120);
+}
+
+QWidget[CustomStyle='SplitStyle']
+{
+    background-color: rgb(37, 234, 234);
+}

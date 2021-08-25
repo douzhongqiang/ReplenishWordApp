@@ -1,6 +1,9 @@
 #include "ReplenishWordMainWidget.h"
 #include <QVBoxLayout>
 #include <QApplication>
+#include <QChar>
+#include <QDebug>
+#include "HPNearCharacterCore.h"
 
 ReplenishWordMainWidget::ReplenishWordMainWidget(QWidget* parent)
     :QWidget(parent)
@@ -26,6 +29,9 @@ void ReplenishWordMainWidget::initUI(void)
     // Init Render Widget
     QString fontPath = qApp->applicationDirPath() + "/simsun.ttc";
     m_pReplenishWidget->loadCurrentFont(fontPath);
+
+    // Init WordSplit Core
+    g_HPNearCharactorCore->init();
 
     // Add Bottom Widget
     QWidget* pButtomWidget = createBottomWidget();
@@ -56,6 +62,17 @@ void ReplenishWordMainWidget::onClickedButton(void)
 {
     QString str = m_pInputLineEdit->text();
     m_pReplenishWidget->setCurrentRender(str);
+
+    QVector<quint32> unicodes = g_HPNearCharactorCore->findWordByRadicals(str.unicode()->unicode());
+    QString tempString;
+    for (int i=0; i<unicodes.size(); ++i)
+    {
+        uint code = unicodes[i];
+        QChar tempChar(code);
+        tempString.push_back(tempChar);
+    }
+
+    qDebug() << __FUNCTION__ << tempString;
 }
 
 void ReplenishWordMainWidget::setCurrentOperatorMode(FreeTypeRenderWidget::OperatorType type)

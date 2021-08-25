@@ -13,7 +13,10 @@ OBJECTS_DIR += $$PWD/temp
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 INCLUDEPATH += $$PWD/../FreeTypeWraper
+INCLUDEPATH += $$PWD/../HPNearCharacter
+
 LIBS += -L$$PWD/bin/ -lFreeTypeWraper
+LIBS += -L$$PWD/bin/ -lHPNearCharacter
 
 SOURCES += \
     ReplenishWordMainWidget.cpp \
