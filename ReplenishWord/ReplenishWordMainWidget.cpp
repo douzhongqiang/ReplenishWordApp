@@ -41,7 +41,15 @@ void ReplenishWordMainWidget::initUI(void)
 QWidget* ReplenishWordMainWidget::createBottomWidget(void)
 {
     QWidget *pBottomWidget = new QWidget();
-    QHBoxLayout* pBottomLayout = new QHBoxLayout(pBottomWidget);
+    QVBoxLayout* pMainLayout = new QVBoxLayout(pBottomWidget);
+    pMainLayout->setMargin(0);
+    pMainLayout->setSpacing(2);
+
+    // Top Widget
+    QWidget* pTopWidget = new QWidget;
+    pMainLayout->addWidget(pTopWidget);
+
+    QHBoxLayout* pBottomLayout = new QHBoxLayout(pTopWidget);
     pBottomLayout->setMargin(0);
     pBottomLayout->setSpacing(2);
 
@@ -54,6 +62,33 @@ QWidget* ReplenishWordMainWidget::createBottomWidget(void)
     QPushButton* pButton = new QPushButton(tr("Inset"));
     QObject::connect(pButton, &QPushButton::clicked, this, &ReplenishWordMainWidget::onClickedButton);
     pBottomLayout->addWidget(pButton);
+
+    // Bottom Widget
+    QWidget *pBottomWidget2 = new QWidget;
+    pMainLayout->addWidget(pBottomWidget2);
+    QHBoxLayout* pBottomLayout2 = new QHBoxLayout(pBottomWidget2);
+    pBottomLayout2->setMargin(0);
+    pBottomLayout2->setSpacing(2);
+
+    m_pTextEdit = new QTextEdit;
+    QFont font = m_pTextEdit->font();
+    font.setPixelSize(20);
+    m_pTextEdit->setFont(font);
+    m_pTextEdit->setFixedHeight(120);
+    pBottomLayout2->addWidget(m_pTextEdit);
+
+    // Buttons
+    QWidget* pButtonWdiget = new QWidget;
+    pBottomLayout2->addWidget(pButtonWdiget);
+    QVBoxLayout* pButtonLayout = new QVBoxLayout(pButtonWdiget);
+    pButtonLayout->setMargin(0);
+    pButtonLayout->setSpacing(0);
+
+    QPushButton* pAddToTopButton = new QPushButton(tr("Add To Top"));
+    pButtonLayout->addWidget(pAddToTopButton);
+
+    QPushButton* pAddToBottomButton = new QPushButton(tr("Add To Bottom"));
+    pButtonLayout->addWidget(pAddToBottomButton);
 
     return pBottomWidget;
 }
@@ -72,7 +107,7 @@ void ReplenishWordMainWidget::onClickedButton(void)
         tempString.push_back(tempChar);
     }
 
-    qDebug() << __FUNCTION__ << tempString;
+    m_pTextEdit->setPlainText(tempString);
 }
 
 void ReplenishWordMainWidget::setCurrentOperatorMode(FreeTypeRenderWidget::OperatorType type)

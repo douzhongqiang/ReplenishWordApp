@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
+#include <QTextEdit>
 #include "FreeTypeRenderWidget.h"
 
 class ReplenishWordMainWidget : public QWidget
@@ -22,6 +23,7 @@ public:
 private:
     FreeTypeRenderWidget* m_pReplenishWidget = nullptr;
     QLineEdit* m_pInputLineEdit = nullptr;
+    QTextEdit* m_pTextEdit = nullptr;
 
     void initUI(void);
     QWidget* createBottomWidget(void);
